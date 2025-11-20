@@ -7,8 +7,16 @@
   <span class="spacer"></span>
 
   <!-- Right-side menu buttons -->
-  <button mat-button [matMenuTriggerFor]="singleBooking">Booking</button>
-  <!-- <button mat-button [matMenuTriggerFor]="groupBooking">Group Booking</button> -->
+   <div *ngIf="this.role == 'Student'; else instructor">
+      <button mat-button >Book Appointment</button>
+      <button mat-button>Join Group</button>
+   </div>
+
+   <ng-template #instructor>
+       <button mat-button >Create Appointment</button>
+       <button mat-button>Create Group</button>
+   </ng-template>
+  
   <!-- <button mat-button [matMenuTriggerFor]="manageBookings">Manage Bookings</button> -->
   <!-- <button mat-button [matMenuTriggerFor]="afterMenu">After</button> -->
 
@@ -16,7 +24,7 @@
   <span class="user-section">
     <button mat-button [matMenuTriggerFor]="userMenu">
       <mat-icon>account_circle</mat-icon>
-      John Doe - Student
+      John Doe - {{this.role}}
     </button>
   </span>
 
