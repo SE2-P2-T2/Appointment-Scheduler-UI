@@ -1,35 +1,75 @@
+// instructor-scheduler-component.scss
 .instructors-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: flex-start;
-
-    .example-card {
-        flex: 0 0 400px; // fixed width
-        height: 254px; // fixed height for all cards
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column; // keep header, content, actions stacked
-    }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 0;
 }
 
 .example-card {
-    .example-header-image {
-        background-image: url('/project.jpg');
-        background-size: cover;
-        background-position: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+  max-width: 400px;
+  min-width: 300px;
+  flex: 1 1 calc(33.333% - 16px);
+  
+  mat-card-content {
+    p {
+      line-height: 1.8;
+      margin: 8px 0;
+      
+      strong {
+        font-weight: 600;
+        color: rgba(0, 0, 0, 0.87);
+      }
     }
+  }
+}
 
-    mat-card-content {
-        flex: 1; // makes content expand to fill available height
-        overflow: autos; // scroll if content is too long
-    }
+.example-header-image {
+  background-image: url('https://material.angular.io/assets/img/examples/shiba1.jpg');
+  background-size: cover;
+}
 
-    mat-card-actions {
-        display: flex;
-        justify-content: space-between;
-    }
+.loading-container,
+.error-container,
+.no-data-container {
+  padding: 24px;
+  text-align: center;
+}
+
+.error-message {
+  color: #f44336;
+  margin-bottom: 16px;
+}
+
+mat-card-actions {
+  padding: 8px 16px;
+  display: flex;
+  gap: 8px;
+}
+
+// Responsive design
+@media (max-width: 1200px) {
+  .example-card {
+    flex: 1 1 calc(50% - 16px);
+  }
+}
+
+@media (max-width: 768px) {
+  .example-card {
+    flex: 1 1 100%;
+  }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+  }
 }
