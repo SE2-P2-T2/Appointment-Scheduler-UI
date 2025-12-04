@@ -1,20 +1,21 @@
 <mat-toolbar color="primary">
 
   <!-- Left side: title -->
-  <span class="nav-title">Appointment Scheduler</span>
+  <!-- <span class="nav-title">Appointment Scheduler</span> -->
+     <h1>Appointment Scheduler</h1>
 
   <!-- Push menu buttons to the right -->
   <span class="spacer"></span>
 
   <!-- Right-side menu buttons -->
    <div *ngIf="this.role == 'Student'; else instructor">
-      <button mat-button >Book Appointment</button>
+      <button mat-button>Book Appointment</button>
       <button mat-button>Join Group</button>
    </div>
 
    <ng-template #instructor>
-       <button mat-button >Create Appointment</button>
-       <button mat-button>Create Group</button>
+       <!-- <button mat-button (click)="openCreateAppointmentDialog()">Create Appointment</button>
+       <button mat-button>Create Group</button> -->
    </ng-template>
   
   <!-- <button mat-button [matMenuTriggerFor]="manageBookings">Manage Bookings</button> -->

@@ -1,35 +1,178 @@
-.instructors-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: flex-start;
 
-    .example-card {
-        flex: 0 0 400px; // fixed width
-        height: 254px; // fixed height for all cards
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column; // keep header, content, actions stacked
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 16px;
+  
+  h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1976d2;
+  }
+}
+
+
+.section-container {
+  margin-bottom: 48px;
+  
+  &:last-child {
+    margin-bottom: 24px;
+  }
+}
+
+.section-header {
+  padding: 0 16px 16px 16px;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 24px;
+  
+  .section-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1976d2;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 28px;
+      background-color: #1976d2;
+      margin-right: 12px;
+      border-radius: 2px;
     }
+  }
+  
+  .section-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    padding-left: 16px;
+  }
+}
+
+
+mat-accordion {
+  display: block;
+  margin: 0 16px;
+}
+
+.instructors-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 0;
 }
 
 .example-card {
-    .example-header-image {
-        background-image: url('/project.jpg');
-        background-size: cover;
-        background-position: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+  max-width: 400px;
+  min-width: 300px;
+  flex: 1 1 calc(33.333% - 16px);
+  transition: all 0.3s ease;
+  
+  mat-card-content {
+    p {
+      line-height: 1.8;
+      margin: 8px 0;
+      
+      strong {
+        font-weight: 600;
+        color: rgba(0, 0, 0, 0.87);
+      }
     }
+  }
+}
 
-    mat-card-content {
-        flex: 1; // makes content expand to fill available height
-        overflow: autos; // scroll if content is too long
-    }
 
-    mat-card-actions {
-        display: flex;
-        justify-content: space-between;
+.available-card {
+  border-left: 4px solid #2196f3;
+  background-color: #e3f2fd;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+
+.booked-card {
+  border-left: 4px solid #4caf50;
+  background-color: #f1f8f4;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  
+  &.available {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  &.booked {
+    background-color: #4caf50;
+    color: white;
+  }
+}
+
+.example-header-image {
+  background-image: url('https://material.angular.io/assets/img/examples/shiba1.jpg');
+  background-size: cover;
+}
+
+.loading-container,
+.error-container,
+.no-data-container {
+  padding: 24px;
+  text-align: center;
+}
+
+.error-message {
+  color: #f44336;
+  margin-bottom: 16px;
+}
+
+mat-card-actions {
+  padding: 8px 16px;
+  display: flex;
+  gap: 8px;
+}
+
+// Responsive design
+@media (max-width: 1200px) {
+  .example-card {
+    flex: 1 1 calc(50% - 16px);
+  }
+}
+
+@media (max-width: 768px) {
+  .example-card {
+    flex: 1 1 100%;
+  }
+  
+  .section-header {
+    .section-title {
+      font-size: 24px;
     }
+  }
+  
+  .page-header {
+    h1 {
+      font-size: 24px;
+    }
+  }
 }

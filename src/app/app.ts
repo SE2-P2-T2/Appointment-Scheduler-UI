@@ -22,8 +22,8 @@ export class App {
 
 
   protected readonly title = signal('appointment-scheduler-ui');
-  //role = Role.Instructor;
-  role = Role.Student
+  role = Role.Instructor;
+  //role = Role.Student
 
   constructor(private router: Router) {}
   

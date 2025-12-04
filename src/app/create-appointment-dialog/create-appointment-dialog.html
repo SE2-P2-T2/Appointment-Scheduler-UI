@@ -1,0 +1,128 @@
+<h2 mat-dialog-title>Create Appointment</h2>
+
+<mat-dialog-content>
+  <div class="toggle-section">
+    <mat-slide-toggle 
+      [(ngModel)]="isGroupAppointment"
+      (change)="onToggleChange()"
+      color="primary"
+    >
+      <span class="toggle-label">
+        {{ isGroupAppointment() ? 'Group Appointment' : 'Individual Appointment' }}
+      </span>
+    </mat-slide-toggle>
+  </div>
+
+  <form class="appointment-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Instructor ID</mat-label>
+      <input 
+        matInput 
+        type="number" 
+        [value]="instructorId" 
+        readonly
+        disabled
+      />
+      <mat-hint>This field is read-only</mat-hint>
+    </mat-form-field>
+
+    <ng-container *ngIf="!isGroupAppointment()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Appointment Date</mat-label>
+        <input 
+          matInput 
+          [matDatepicker]="picker" 
+          [(ngModel)]="appointmentDate"
+          name="appointmentDate"
+          required
+        />
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Location</mat-label>
+        <input 
+          matInput 
+          [(ngModel)]="location"
+          name="location"
+          placeholder="e.g., Room 301"
+        />
+      </mat-form-field>
+    </ng-container>
+
+    <ng-container *ngIf="isGroupAppointment()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Group Name</mat-label>
+        <input 
+          matInput 
+          [(ngModel)]="groupName"
+          name="groupName"
+          placeholder="e.g., Group A"
+          required
+        />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Max Participants</mat-label>
+        <input 
+          matInput 
+          type="number"
+          [(ngModel)]="maxLimit"
+          name="maxLimit"
+          placeholder="Maximum number of participants"
+          min="1"
+        />
+      </mat-form-field>
+    </ng-container>
+
+    <div class="time-row">
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Start Time</mat-label>
+        <input 
+          matInput 
+          type="time" 
+          [(ngModel)]="startTime"
+          name="startTime"
+          required
+        />
+        <mat-hint>Format: HH:MM</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>End Time</mat-label>
+        <input 
+          matInput 
+          type="time" 
+          [(ngModel)]="endTime"
+          name="endTime"
+          required
+        />
+        <mat-hint>Format: HH:MM</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea 
+        matInput 
+        [(ngModel)]="description"
+        name="description"
+        rows="3"
+        placeholder="Add appointment details..."
+      ></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button 
+    mat-raised-button 
+    color="primary" 
+    (click)="onSubmit()"
+    [disabled]="!isFormValid()"
+  >
+    Create {{ isGroupAppointment() ? 'Group' : 'Individual' }} Appointment
+  </button>
+</mat-dialog-actions>
