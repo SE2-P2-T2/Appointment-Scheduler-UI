@@ -35,6 +35,105 @@ export class InstructorSchedulerComponent implements OnInit {
   individualLoading = false;
   individualError: string | null = null;
 
+  // Sample Data for booked appointments
+  bookedGroupAppointments = [
+    {
+      groupId: 1,
+      groupName: 'Software Engineering Team A',
+      instructorId: 101,
+      startTime: '10:00:00',
+      endTime: '11:00:00',
+      maxLimit: 5,
+      currentParticipants: 4,
+      description: 'Sprint Planning Session',
+      bookedBy: 'John Doe',
+      bookedAt: '2025-12-01T14:30:00Z',
+      status: 'BOOKED'
+    },
+    {
+      groupId: 2,
+      groupName: 'Data Science Team B',
+      instructorId: 101,
+      startTime: '14:00:00',
+      endTime: '15:30:00',
+      maxLimit: 6,
+      currentParticipants: 6,
+      description: 'Model Review and Discussion',
+      bookedBy: 'Jane Smith',
+      bookedAt: '2025-12-02T09:15:00Z',
+      status: 'BOOKED'
+    },
+    {
+      groupId: 3,
+      groupName: 'Web Development Group C',
+      instructorId: 101,
+      startTime: '16:00:00',
+      endTime: '17:00:00',
+      maxLimit: 4,
+      currentParticipants: 3,
+      description: 'Frontend Architecture Discussion',
+      bookedBy: 'Mike Johnson',
+      bookedAt: '2025-12-03T11:20:00Z',
+      status: 'BOOKED'
+    }
+  ];
+
+  bookedIndividualAppointments = [
+    {
+      appointmentId: 101,
+      instructorId: 101,
+      appointmentDate: '2025-12-15',
+      startTime: '09:00:00',
+      endTime: '10:00:00',
+      location: 'Room 301',
+      description: 'Thesis Discussion',
+      studentName: 'Alice Williams',
+      studentEmail: 'alice.williams@example.com',
+      bookedAt: '2025-11-28T10:30:00Z',
+      status: 'BOOKED'
+    },
+    {
+      appointmentId: 102,
+      instructorId: 101,
+      appointmentDate: '2025-12-16',
+      startTime: '11:00:00',
+      endTime: '12:00:00',
+      location: 'Room 205',
+      description: 'Project Guidance',
+      studentName: 'Bob Anderson',
+      studentEmail: 'bob.anderson@example.com',
+      bookedAt: '2025-11-29T15:45:00Z',
+      status: 'BOOKED'
+    },
+    {
+      appointmentId: 103,
+      instructorId: 101,
+      appointmentDate: '2025-12-17',
+      startTime: '13:00:00',
+      endTime: '14:00:00',
+      location: 'Room 402',
+      description: 'Code Review Session',
+      studentName: 'Carol Martinez',
+      studentEmail: 'carol.martinez@example.com',
+      bookedAt: '2025-11-30T08:00:00Z',
+      status: 'BOOKED'
+    },
+    {
+      appointmentId: 104,
+      instructorId: 101,
+      appointmentDate: '2025-12-18',
+      startTime: '15:00:00',
+      endTime: '16:00:00',
+      location: 'Room 101',
+      description: 'Research Methodology Consultation',
+      studentName: 'David Lee',
+      studentEmail: 'david.lee@example.com',
+      bookedAt: '2025-12-01T12:30:00Z',
+      status: 'BOOKED'
+    }
+  ];
+
+
   constructor(private groupAppointmentService: GroupAppointmentService, private individualAppointmentService: IndividualAppointmentService) {}
   ngOnInit(): void {
     this.loadGroupAppointments();

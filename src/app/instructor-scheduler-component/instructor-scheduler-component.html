@@ -1,121 +1,218 @@
 <div class="page-header">
+  <h1>Instructor Dashboard</h1>
   <button mat-raised-button color="primary" (click)="openCreateAppointmentDialog()">
-    + Create Appointment
+    + Create Appointment Slot
   </button>
 </div>
 
+<div class="section-container">
+  <div class="section-header">
+    <h2 class="section-title">Available Slots</h2>
+    <p class="section-subtitle">Appointment slots open for student booking</p>
+  </div>
 
-<mat-accordion>
-
+  <mat-accordion>
     <mat-expansion-panel hideToggle>
-        <mat-expansion-panel-header>
-            <mat-panel-title>Available Slots</mat-panel-title>
-            <mat-panel-description>Group Appointments</mat-panel-description>
-        </mat-expansion-panel-header>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Group Appointments</mat-panel-title>
+        <mat-panel-description>
+          {{ groupAppointments.length }} slots available
+        </mat-panel-description>
+      </mat-expansion-panel-header>
 
+      <div *ngIf="groupLoading" class="loading-container">
+        <p>Loading group appointments...</p>
+      </div>
 
-        <div *ngIf="groupLoading" class="loading-container">
-            <p>Loading group appointments...</p>
-        </div>
+      <div *ngIf="groupError" class="error-container">
+        <p class="error-message">{{ groupError }}</p>
+        <button mat-raised-button color="primary" (click)="loadGroupAppointments()">
+          Retry
+        </button>
+      </div>
 
+      <div *ngIf="!groupLoading && !groupError && groupAppointments.length === 0" class="no-data-container">
+        <p>No group appointment slots created yet.</p>
+      </div>
 
-        <div *ngIf="groupError" class="error-container">
-            <p class="error-message">{{ groupError }}</p>
-            <button mat-raised-button color="primary" (click)="loadGroupAppointments()">
-                Retry
+      <div *ngIf="!groupLoading && !groupError && groupAppointments.length > 0" class="instructors-row">
+        <mat-card 
+          *ngFor="let appointment of groupAppointments" 
+          class="example-card available-card" 
+          appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>
+              {{ appointment.groupName || 'Group Appointment' }}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Group ID: {{ appointment.groupId }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <p>
+              <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
+              <strong>Max Participants:</strong> {{ appointment.maxLimit || 'N/A' }}<br>
+              <strong>Description:</strong> {{ appointment.description || 'No description available' }}<br>
+              <strong>Created:</strong> {{ formatDate(appointment.createdAt) }}<br>
+              <strong>Status:</strong> <span class="status-badge available">OPEN FOR BOOKING</span>
+            </p>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-raised-button color="warn" (click)="deleteGroupAppointment(appointment.groupId)">
+              Delete Slot
             </button>
-        </div>
-
-
-        <div *ngIf="!groupLoading && !groupError && groupAppointments.length === 0" class="no-data-container">
-            <p>No group appointments found.</p>
-        </div>
-
-
-        <div *ngIf="!groupLoading && !groupError && groupAppointments.length > 0" class="instructors-row">
-            <mat-card 
-                *ngFor="let appointment of groupAppointments" 
-                class="example-card" 
-                appearance="outlined">
-                <mat-card-header>
-                    <mat-card-title>
-                        {{ "Group " + appointment.groupId + " : " + (appointment.groupName || 'Unnamed Group') }}
-                    </mat-card-title>
-                    <mat-card-subtitle>
-                        Instructor ID: {{ appointment.instructorId || 'N/A' }}
-                    </mat-card-subtitle>
-                </mat-card-header>
-                
-                <mat-card-content>
-                    <p>
-                        <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
-                        <strong>Max Participants:</strong> {{ appointment.maxLimit || 'N/A' }}<br>
-                        <strong>Description:</strong> {{ appointment.description || 'No description available' }}<br>
-                        <strong>Created:</strong> {{ formatDate(appointment.createdAt) }}
-                    </p>
-                </mat-card-content>
-                
-                <mat-card-actions>
-                    <button mat-button color="warn" (click)="deleteGroupAppointment(appointment.groupId)">
-                        Delete Appointment
-                    </button>
-                </mat-card-actions>
-            </mat-card>
-        </div>
+          </mat-card-actions>
+        </mat-card>
+      </div>
     </mat-expansion-panel>
 
+    <mat-expansion-panel hideToggle>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Individual Appointments</mat-panel-title>
+        <mat-panel-description>
+          {{ individualAppointments.length }} slots available
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div *ngIf="individualLoading" class="loading-container">
+        <p>Loading individual appointments...</p>
+      </div>
+
+      <div *ngIf="individualError" class="error-container">
+        <p class="error-message">{{ individualError }}</p>
+        <button mat-raised-button color="primary" (click)="loadIndividualAppointments()">
+          Retry
+        </button>
+      </div>
+
+      <div *ngIf="!individualLoading && !individualError && individualAppointments.length === 0" class="no-data-container">
+        <p>No individual appointment slots created yet.</p>
+      </div>
+
+      <div *ngIf="!individualLoading && !individualError && individualAppointments.length > 0" class="instructors-row">
+        <mat-card 
+          *ngFor="let appointment of individualAppointments" 
+          class="example-card available-card" 
+          appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>{{ appointment.description || 'Individual Appointment' }}</mat-card-title>
+            <mat-card-subtitle>Slot ID: {{ appointment.appointmentId }}</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <p>
+              <strong>Date:</strong> {{ formatFullDate(appointment.appointmentDate) }}<br>
+              <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
+              <strong>Location:</strong> {{ appointment.location || 'N/A' }}<br>
+              <strong>Created:</strong> {{ formatDate(appointment.createdAt) }}<br>
+              <strong>Status:</strong> <span class="status-badge available">OPEN FOR BOOKING</span>
+            </p>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-raised-button color="warn" (click)="deleteIndividualAppointment(appointment.appointmentId)">
+              Delete Slot
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>
+
+
+<div class="section-container">
+  <div class="section-header">
+    <h2 class="section-title">Booked Appointments</h2>
+    <p class="section-subtitle">Students who have booked your appointment slots</p>
+  </div>
+
+  <mat-accordion>
+    <mat-expansion-panel hideToggle>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Group Appointments</mat-panel-title>
+        <mat-panel-description>
+          {{ bookedGroupAppointments.length }} booked
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div *ngIf="bookedGroupAppointments.length === 0" class="no-data-container">
+        <p>No group appointments booked yet.</p>
+      </div>
+
+      <div *ngIf="bookedGroupAppointments.length > 0" class="instructors-row">
+        <mat-card 
+          *ngFor="let appointment of bookedGroupAppointments" 
+          class="example-card booked-card" 
+          appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>
+              {{ appointment.groupName }}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Group ID: {{ appointment.groupId }} | Booked by: {{ appointment.bookedBy }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <p>
+              <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
+              <strong>Participants:</strong> {{ appointment.currentParticipants }} / {{ appointment.maxLimit }}<br>
+              <strong>Description:</strong> {{ appointment.description }}<br>
+              <strong>Booked On:</strong> {{ formatDate(appointment.bookedAt) }}<br>
+              <strong>Status:</strong> <span class="status-badge booked">BOOKED</span>
+            </p>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-button color="primary">View Student Details</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </mat-expansion-panel>
 
     <mat-expansion-panel hideToggle>
-        <mat-expansion-panel-header>
-            <mat-panel-title>Available Slots</mat-panel-title>
-            <mat-panel-description>Individual Appointments</mat-panel-description>
-        </mat-expansion-panel-header>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Individual Appointments</mat-panel-title>
+        <mat-panel-description>
+          {{ bookedIndividualAppointments.length }} booked
+        </mat-panel-description>
+      </mat-expansion-panel-header>
 
+      <div *ngIf="bookedIndividualAppointments.length === 0" class="no-data-container">
+        <p>No individual appointments booked yet.</p>
+      </div>
 
-        <div *ngIf="individualLoading" class="loading-container">
-            <p>Loading individual appointments...</p>
-        </div>
-
-
-        <div *ngIf="individualError" class="error-container">
-            <p class="error-message">{{ individualError }}</p>
-            <button mat-raised-button color="primary" (click)="loadIndividualAppointments()">
-                Retry
-            </button>
-        </div>
-
-
-        <div *ngIf="!individualLoading && !individualError && individualAppointments.length === 0" class="no-data-container">
-            <p>No individual appointments found.</p>
-        </div>
-
-
-        <div *ngIf="!individualLoading && !individualError && individualAppointments.length > 0" class="instructors-row">
-            <mat-card 
-                *ngFor="let appointment of individualAppointments" 
-                class="example-card" 
-                appearance="outlined">
-                <mat-card-header>
-                    <mat-card-title>{{ appointment.description || 'Individual Appointment' }}</mat-card-title>
-                    <mat-card-subtitle>Instructor ID: {{ appointment.instructorId }}</mat-card-subtitle>
-                </mat-card-header>
-                
-                <mat-card-content>
-                    <p>
-                        <strong>Date:</strong> {{ formatFullDate(appointment.appointmentDate) }}<br>
-                        <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
-                        <strong>Location:</strong> {{ appointment.location || 'N/A' }}<br>
-                        <strong>Status:</strong> {{ appointment.status || 'available' }}<br>
-                        <strong>Created:</strong> {{ formatDate(appointment.createdAt) }}
-                    </p>
-                </mat-card-content>
-                
-                <mat-card-actions>
-                    <button mat-button color="warn" (click)="deleteIndividualAppointment(appointment.appointmentId)">
-                        Delete Appointment
-                    </button>
-                </mat-card-actions>
-            </mat-card>
-        </div>
+      <div *ngIf="bookedIndividualAppointments.length > 0" class="instructors-row">
+        <mat-card 
+          *ngFor="let appointment of bookedIndividualAppointments" 
+          class="example-card booked-card" 
+          appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>{{ appointment.description }}</mat-card-title>
+            <mat-card-subtitle>
+              Student: {{ appointment.studentName }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <p>
+              <strong>Date:</strong> {{ formatFullDate(appointment.appointmentDate) }}<br>
+              <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
+              <strong>Location:</strong> {{ appointment.location }}<br>
+              <strong>Student Email:</strong> {{ appointment.studentEmail }}<br>
+              <strong>Booked On:</strong> {{ formatDate(appointment.bookedAt) }}<br>
+              <strong>Status:</strong> <span class="status-badge booked">BOOKED</span>
+            </p>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-button color="primary">Contact Student</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
     </mat-expansion-panel>
-</mat-accordion>
+  </mat-accordion>
+</div>
