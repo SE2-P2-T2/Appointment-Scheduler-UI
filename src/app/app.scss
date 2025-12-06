@@ -1,29 +1,78 @@
-mat-toolbar {
-  display: flex;
-  align-items: center;
-}
-
-.nav-title {
-  font-size: 20px;
-  font-weight: 600;
-}
-
 .spacer {
   flex: 1 1 auto;
 }
 
-.user-section {
-  margin-left: 16px;
-
-  button {
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .role-indicator {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 8px 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
   }
+}
 
-    h1 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 500;
+.user-info {
+  padding: 16px;
+  
+  p {
+    margin: 4px 0;
+    
+    &:first-child {
+      font-size: 16px;
+      color: #333;
+    }
+    
+    &:nth-child(2) {
+      font-size: 14px;
+      color: #666;
+    }
+  }
+  
+  .role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background-color: #1976d2;
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  mat-toolbar {
+    .role-indicator {
+      padding: 6px 12px;
+      font-size: 12px;
+      
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
   }
 }

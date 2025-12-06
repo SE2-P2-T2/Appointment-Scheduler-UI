@@ -1,35 +1,533 @@
-.instructors-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: flex-start;
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
 
-  .example-card {
-    flex: 0 0 400px; // fixed width
-    height: 650px;   // fixed height for all cards
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column; // keep header, content, actions stacked
+
+.section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 32px;
+  overflow: hidden;
+
+  .section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 32px;
+    border-bottom: 4px solid #5568d3;
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 8px;
+
+      mat-icon {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    .section-subtitle {
+      margin: 0;
+      margin-left: 52px;
+      font-size: 16px;
+      opacity: 0.95;
+      font-weight: 400;
+
+      strong {
+        font-weight: 600;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .section-content {
+    padding: 32px;
   }
 }
 
-.example-card {
-  .example-header-image {
-    background-image: url('https://material.angular.dev/assets/img/examples/shiba1.jpg');
-    background-size: cover;
-    background-position: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+.subsection {
+  margin-bottom: 48px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .subsection-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eaf6 100%);
+    border-left: 4px solid #667eea;
+    border-radius: 8px;
+    margin-bottom: 24px;
+
+    mat-icon {
+      color: #667eea;
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      flex: 1;
+    }
+
+    .count-badge {
+      background-color: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 24px;
+      text-align: center;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  gap: 16px;
+
+  mat-spinner {
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #666;
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.no-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  color: #999;
+  background-color: #fafafa;
+  border-radius: 12px;
+  border: 2px dashed #e0e0e0;
+
+  mat-icon {
+    font-size: 72px;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+    color: #bbb;
+  }
+
+  p {
+    margin: 8px 0;
+    font-size: 16px;
+    color: #666;
+
+    &.hint-text {
+      font-size: 14px;
+      color: #999;
+      font-style: italic;
+    }
+  }
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.instructor-card {
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+  }
+
+  &.selected {
+    border: 2px solid #4caf50;
+    background: linear-gradient(135deg, #f1f8f4 0%, #e8f5e9 100%);
+    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
+  }
+
+  .instructor-avatar {
+    background: transparent;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #667eea;
+    }
+  }
+
+  mat-card-header {
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+
+    mat-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    mat-card-subtitle {
+      font-size: 14px;
+      color: #666;
+    }
   }
 
   mat-card-content {
-    flex: 1; // makes content expand to fill available height
-    overflow: auto; // scroll if content is too long
+    padding: 16px 0;
+
+    .instructor-username {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666;
+      margin: 0;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #999;
+      }
+    }
   }
 
   mat-card-actions {
+    padding: 16px 0 0 0;
+    border-top: 1px solid #eee;
+
+    button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+  }
+}
+
+.appointment-card {
+  transition: all 0.3s ease;
+  border-left: 4px solid;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  mat-card-header {
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    mat-card-subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-top: 4px;
+    }
+  }
+
+  mat-card-content {
+    padding: 16px 0;
+  }
+
+  mat-card-actions {
+    padding: 16px 0 0 0;
+    border-top: 1px solid #eee;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+}
+
+.available-card {
+  border-left-color: #2196f3;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.booked-card {
+  border-left-color: #4caf50;
+  background: linear-gradient(135deg, #f1f8f4 0%, #c8e6c9 100%);
+}
+
+.cancelled-card {
+  border-left-color: #f44336;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  opacity: 0.85;
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .detail-row {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    color: #333;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: #666;
+    }
+
+    span {
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .cancellation-reason {
+      font-style: italic;
+      color: #d32f2f;
+      font-size: 14px;
+    }
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.available {
+    background-color: #2196f3;
+    color: white;
+  }
+
+  &.booked {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  &.cancelled {
+    background-color: #f44336;
+    color: white;
+  }
+
+  &.pending {
+    background-color: #ff9800;
+    color: white;
+  }
+}
+
+@media (max-width: 1200px) {
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+
+  .section {
+    margin-bottom: 24px;
+
+    .section-header {
+      padding: 24px 20px;
+
+      .section-title {
+        mat-icon {
+          font-size: 28px;
+          width: 28px;
+          height: 28px;
+        }
+
+        h2 {
+          font-size: 22px;
+        }
+      }
+
+      .section-subtitle {
+        font-size: 14px;
+        margin-left: 44px;
+      }
+    }
+
+    .section-content {
+      padding: 20px;
+    }
+  }
+
+  .subsection {
+    margin-bottom: 32px;
+
+    .subsection-header {
+      padding: 12px 16px;
+
+      h3 {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.group-members-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+
+  .show-members-btn {
+    width: 100%;
+    justify-content: center;
+    font-weight: 500;
+  }
+}
+
+.loading-members {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.members-list {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+
+  .members-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background-color: #1976d2;
+    color: white;
+    border-radius: 4px;
+    font-weight: 600;
+    
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .member-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background-color: white;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    border-left: 3px solid #4caf50;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .member-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background-color: #1976d2;
+      color: white;
+      border-radius: 50%;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #666;
+    }
+
+    .member-name {
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+    }
+  }
+
+  .no-members {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    color: #999;
+    font-style: italic;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
   }
 }
