@@ -8,5 +8,6 @@ export interface GroupAppointment {
   endTime?: string;    
   description?: string;
   createdAt?: string; 
-  updatedAt?: string;  
+  updatedAt?: string; 
+  status?: string; 
 }

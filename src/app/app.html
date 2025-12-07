@@ -1,62 +1,32 @@
-<mat-toolbar color="primary">
-
-  <!-- Left side: title -->
-  <!-- <span class="nav-title">Appointment Scheduler</span> -->
-     <h1>Appointment Scheduler</h1>
-
-  <!-- Push menu buttons to the right -->
-  <span class="spacer"></span>
-
-  <!-- Right-side menu buttons -->
-   <div *ngIf="this.role == 'Student'; else instructor">
-      <button mat-button>Book Appointment</button>
-      <button mat-button>Join Group</button>
-   </div>
-
-   <ng-template #instructor>
-       <!-- <button mat-button (click)="openCreateAppointmentDialog()">Create Appointment</button>
-       <button mat-button>Create Group</button> -->
-   </ng-template>
+<mat-toolbar color="primary" *ngIf="showToolbar">
+  <span>{{ title }}</span>
   
-  <!-- <button mat-button [matMenuTriggerFor]="manageBookings">Manage Bookings</button> -->
-  <!-- <button mat-button [matMenuTriggerFor]="afterMenu">After</button> -->
-
-  <!-- User section -->
-  <span class="user-section">
-    <button mat-button [matMenuTriggerFor]="userMenu">
-      <mat-icon>account_circle</mat-icon>
-      John Doe - {{this.role}}
-    </button>
+  <span class="spacer"></span>
+  
+  <span class="role-indicator">
+    <mat-icon>badge</mat-icon>
+    {{ getRoleName() }}
   </span>
-
+  
+  <span class="spacer"></span>
+  
+  <button mat-button [matMenuTriggerFor]="menu">
+    <mat-icon>account_circle</mat-icon>
+    {{ getFullName() }}
+  </button>
+  
+  <mat-menu #menu="matMenu">
+    <div class="user-info">
+      <p><strong>{{ getFullName() }}</strong></p>
+      <p>{{ currentUser?.email }}</p>
+      <p class="role-badge">{{ getRoleName() }}</p>
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+  </mat-menu>
 </mat-toolbar>
-
-<!-- Menus for your navigation buttons -->
-<mat-menu #singleBooking="matMenu" yPosition="above" xPosition="before">
-  <button mat-menu-item>Book Appointment</button>
-  <!-- <button mat-menu-item>Create Booking</button> -->
-  <button mat-menu-item>Join Group</button>
-  <!-- <button mat-menu-item>Item 2</button> -->
-</mat-menu>
-
-<mat-menu #groupBooking="matMenu" yPosition="below" xPosition="before">
-  <button mat-menu-item>Item 1</button>
-  <button mat-menu-item>Item 2</button>
-</mat-menu>
-
-<mat-menu #manageBookings="matMenu" xPosition="before">
-  <button mat-menu-item>Item 1</button>
-  <button mat-menu-item>Item 2</button>
-</mat-menu>
-
-<mat-menu #afterMenu="matMenu" xPosition="after">
-  <button mat-menu-item>Item 1</button>
-  <button mat-menu-item>Item 2</button>
-</mat-menu>
-
-<!-- User menu -->
-<mat-menu #userMenu="matMenu">
-  <button mat-menu-item>Logout</button>
-</mat-menu>
 
 <router-outlet></router-outlet>

@@ -1,24 +1,45 @@
-// instructor-scheduler-component.ts
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+import { forkJoin } from 'rxjs';
+
 import { GroupAppointment } from '../models/group-appointment';
-import { GroupAppointmentService } from '../service/group-appointment-service';
+import { GroupAppointmentService } from '../service/group-appointment.service';
 import { IndividualAppointment } from '../models/Individual-appointment';
-import { IndividualAppointmentService } from '../service/individual-appointment-service';
+import { IndividualAppointmentService } from '../service/individual-appointment.service';
+import { SchedulerService } from '../service/scheduler.service';
+import { UserService } from '../service/user.service';
+import { AuthService } from '../service/auth.service';
+import { SchedulerAppointment } from '../models/Booking';
+import { User } from '../models/User';
 import { AppointmentDialogResult, CreateAppointmentDialogComponent } from '../create-appointment-dialog/create-appointment-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { GroupMember } from '../models/GroupMember';
+
+interface BookedIndividualAppointment extends SchedulerAppointment {
+  appointmentDetails?: IndividualAppointment;
+  studentDetails?: User;
+}
+
+interface BookedGroupAppointment extends SchedulerAppointment {
+  groupDetails?: GroupAppointment;
+  studentDetails?: User;
+}
 
 @Component({
   selector: 'app-instructor-scheduler-component',
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule, 
-    MatButtonModule, 
-    MatExpansionModule
+    MatCardModule,
+    MatButtonModule,
+    MatExpansionModule,
+    MatProgressSpinnerModule,
+    MatIconModule
   ],
   templateUrl: './instructor-scheduler-component.html',
   styleUrl: './instructor-scheduler-component.scss',
@@ -26,7 +47,9 @@ import { MatDialog } from '@angular/material/dialog';
 export class InstructorSchedulerComponent implements OnInit {
   readonly panelOpenState = signal(false);
   readonly dialog = inject(MatDialog);
-  
+
+  currentInstructorId: number = 1;
+
   groupAppointments: GroupAppointment[] = [];
   groupLoading = false;
   groupError: string | null = null;
@@ -35,110 +58,35 @@ export class InstructorSchedulerComponent implements OnInit {
   individualLoading = false;
   individualError: string | null = null;
 
-  // Sample Data for booked appointments
-  bookedGroupAppointments = [
-    {
-      groupId: 1,
-      groupName: 'Software Engineering Team A',
-      instructorId: 101,
-      startTime: '10:00:00',
-      endTime: '11:00:00',
-      maxLimit: 5,
-      currentParticipants: 4,
-      description: 'Sprint Planning Session',
-      bookedBy: 'John Doe',
-      bookedAt: '2025-12-01T14:30:00Z',
-      status: 'BOOKED'
-    },
-    {
-      groupId: 2,
-      groupName: 'Data Science Team B',
-      instructorId: 101,
-      startTime: '14:00:00',
-      endTime: '15:30:00',
-      maxLimit: 6,
-      currentParticipants: 6,
-      description: 'Model Review and Discussion',
-      bookedBy: 'Jane Smith',
-      bookedAt: '2025-12-02T09:15:00Z',
-      status: 'BOOKED'
-    },
-    {
-      groupId: 3,
-      groupName: 'Web Development Group C',
-      instructorId: 101,
-      startTime: '16:00:00',
-      endTime: '17:00:00',
-      maxLimit: 4,
-      currentParticipants: 3,
-      description: 'Frontend Architecture Discussion',
-      bookedBy: 'Mike Johnson',
-      bookedAt: '2025-12-03T11:20:00Z',
-      status: 'BOOKED'
-    }
-  ];
+  bookedGroupAppointments: BookedGroupAppointment[] = [];
+  bookedIndividualAppointments: BookedIndividualAppointment[] = [];
+  bookedLoading = false;
+  bookedError: string | null = null;
 
-  bookedIndividualAppointments = [
-    {
-      appointmentId: 101,
-      instructorId: 101,
-      appointmentDate: '2025-12-15',
-      startTime: '09:00:00',
-      endTime: '10:00:00',
-      location: 'Room 301',
-      description: 'Thesis Discussion',
-      studentName: 'Alice Williams',
-      studentEmail: 'alice.williams@example.com',
-      bookedAt: '2025-11-28T10:30:00Z',
-      status: 'BOOKED'
-    },
-    {
-      appointmentId: 102,
-      instructorId: 101,
-      appointmentDate: '2025-12-16',
-      startTime: '11:00:00',
-      endTime: '12:00:00',
-      location: 'Room 205',
-      description: 'Project Guidance',
-      studentName: 'Bob Anderson',
-      studentEmail: 'bob.anderson@example.com',
-      bookedAt: '2025-11-29T15:45:00Z',
-      status: 'BOOKED'
-    },
-    {
-      appointmentId: 103,
-      instructorId: 101,
-      appointmentDate: '2025-12-17',
-      startTime: '13:00:00',
-      endTime: '14:00:00',
-      location: 'Room 402',
-      description: 'Code Review Session',
-      studentName: 'Carol Martinez',
-      studentEmail: 'carol.martinez@example.com',
-      bookedAt: '2025-11-30T08:00:00Z',
-      status: 'BOOKED'
-    },
-    {
-      appointmentId: 104,
-      instructorId: 101,
-      appointmentDate: '2025-12-18',
-      startTime: '15:00:00',
-      endTime: '16:00:00',
-      location: 'Room 101',
-      description: 'Research Methodology Consultation',
-      studentName: 'David Lee',
-      studentEmail: 'david.lee@example.com',
-      bookedAt: '2025-12-01T12:30:00Z',
-      status: 'BOOKED'
-    }
-  ];
+  showingGroupMembers: { [key: number]: boolean } = {};
+  groupMembers: { [key: number]: GroupMember[] } = {};
+  groupMemberCounts: { [key: number]: number } = {};
+  loadingGroupMembers: { [key: number]: boolean } = {};
 
+  constructor(
+    private groupAppointmentService: GroupAppointmentService,
+    private individualAppointmentService: IndividualAppointmentService,
+    private schedulerService: SchedulerService,
+    private userService: UserService,
+    private authService: AuthService
+  ) {}
 
-  constructor(private groupAppointmentService: GroupAppointmentService, private individualAppointmentService: IndividualAppointmentService) {}
   ngOnInit(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.currentInstructorId = currentUser.userId;
+    }
+
     this.loadGroupAppointments();
     this.loadIndividualAppointments();
+    this.loadBookedAppointments();
   }
+
 
   loadGroupAppointments(): void {
     this.groupLoading = true;
@@ -146,9 +94,13 @@ export class InstructorSchedulerComponent implements OnInit {
 
     this.groupAppointmentService.getAllGroups().subscribe({
       next: (data) => {
-        this.groupAppointments = data;
+        this.groupAppointments = data.filter(
+          apt => apt.instructorId === this.currentInstructorId && 
+                 apt.status !== 'cancelled' && 
+                 apt.status !== 'booked'
+        );
         this.groupLoading = false;
-        console.log('Loaded group appointments:', data);
+        console.log('Loaded group appointments for instructor:', this.groupAppointments);
       },
       error: (error) => {
         this.groupError = 'Failed to load group appointments';
@@ -158,7 +110,188 @@ export class InstructorSchedulerComponent implements OnInit {
     });
   }
 
-    createGroupAppointment(appointment: GroupAppointment): void {
+  loadIndividualAppointments(): void {
+    this.individualLoading = true;
+    this.individualError = null;
+
+    this.individualAppointmentService.getAllIndividualAppointments().subscribe({
+      next: (data) => {
+        this.individualAppointments = data.filter(
+          apt => apt.instructorId === this.currentInstructorId && 
+                 apt.status !== 'cancelled' && 
+                 apt.status !== 'booked'
+        );
+        this.individualLoading = false;
+        console.log('Loaded individual appointments for instructor:', this.individualAppointments);
+      },
+      error: (error) => {
+        this.individualError = 'Failed to load individual appointments';
+        this.individualLoading = false;
+        console.error('Error loading individual appointments:', error);
+      }
+    });
+  }
+
+
+  loadBookedAppointments(): void {
+    this.bookedLoading = true;
+    this.bookedError = null;
+
+    forkJoin({
+      individualBookings: this.schedulerService.getIndividualBookings(),
+      groupBookings: this.schedulerService.getGroupBookings(),
+      individualAppointments: this.individualAppointmentService.getAllIndividualAppointments(),
+      groupAppointments: this.groupAppointmentService.getAllGroups()
+    }).subscribe({
+      next: (data) => {
+        this.processIndividualBookings(
+          data.individualBookings,
+          data.individualAppointments
+        );
+        this.processGroupBookings(
+          data.groupBookings,
+          data.groupAppointments
+        );
+        this.bookedLoading = false;
+        
+        this.loadGroupMemberCounts();
+      },
+      error: (error) => {
+        this.bookedError = 'Failed to load booked appointments';
+        this.bookedLoading = false;
+        console.error('Error loading booked appointments:', error);
+      }
+    });
+  }
+
+  processIndividualBookings(
+    bookings: SchedulerAppointment[],
+    allAppointments: IndividualAppointment[]
+  ): void {
+    const enrichedBookings: BookedIndividualAppointment[] = [];
+
+    bookings.forEach(booking => {
+      if (booking.appointmentId) {
+        const appointment = allAppointments.find(
+          a => a.appointmentId === booking.appointmentId
+        );
+
+        if (appointment && appointment.instructorId === this.currentInstructorId) {
+          this.userService.getUserById(booking.studentId).subscribe({
+            next: (student) => {
+              enrichedBookings.push({
+                ...booking,
+                appointmentDetails: appointment,
+                studentDetails: student
+              });
+              this.bookedIndividualAppointments = [...enrichedBookings];
+            },
+            error: (error) => {
+              console.error('Error loading student details:', error);
+            }
+          });
+        }
+      }
+    });
+  }
+
+processGroupBookings(
+  bookings: SchedulerAppointment[],
+  allGroups: GroupAppointment[]
+): void {
+  const enrichedBookings: BookedGroupAppointment[] = [];
+  const groupedByGroupId = new Map<number, SchedulerAppointment[]>();
+  
+  bookings.forEach(booking => {
+    if (booking.groupId) {
+      const groupId = booking.groupId;
+      if (!groupedByGroupId.has(groupId)) {
+        groupedByGroupId.set(groupId, []);
+      }
+      groupedByGroupId.get(groupId)!.push(booking);
+    }
+  });
+  
+  console.log('Grouped bookings by groupId:', groupedByGroupId);
+  
+  groupedByGroupId.forEach((groupBookings, groupId) => {
+    const sortedBookings = groupBookings.sort((a, b) => {
+      const dateA = new Date(a.bookedAt || 0).getTime();
+      const dateB = new Date(b.bookedAt || 0).getTime();
+      return dateA - dateB;
+    });
+    
+    const firstBooking = sortedBookings[0];
+    
+    const group = allGroups.find(g => g.groupId === groupId);
+    
+    if (group && group.instructorId === this.currentInstructorId) {
+      this.userService.getUserById(firstBooking.studentId).subscribe({
+        next: (student) => {
+          enrichedBookings.push({
+            ...firstBooking,
+            groupDetails: group,
+            studentDetails: student
+          });
+          
+          this.bookedGroupAppointments = [...enrichedBookings];
+          
+          console.log('Added group booking:', {
+            groupId,
+            firstBooker: student.firstName + ' ' + student.lastName,
+            totalMembers: sortedBookings.length
+          });
+        },
+        error: (error) => {
+          console.error('Error loading student details:', error);
+        }
+      });
+    }
+  });
+}
+
+  loadGroupMemberCounts(): void {
+    const uniqueGroupIds = [...new Set(this.bookedGroupAppointments
+      .map(b => b.groupId)
+      .filter((id): id is number => id !== null && id !== undefined))];
+
+    uniqueGroupIds.forEach(groupId => {
+      this.groupAppointmentService.getGroupMemberCount(groupId).subscribe({
+        next: (count) => {
+          this.groupMemberCounts[groupId] = count;
+        },
+        error: (error) => {
+          console.error(`Error loading member count for group ${groupId}:`, error);
+        }
+      });
+    });
+  }
+
+toggleGroupMembers(groupId: number): void {
+  if (this.showingGroupMembers[groupId]) {
+    this.showingGroupMembers[groupId] = false;
+    return;
+  }
+
+  this.loadingGroupMembers[groupId] = true;
+  this.groupAppointmentService.getGroupMembers(groupId).subscribe({
+    next: (members) => {
+      this.groupMembers[groupId] = Array.isArray(members) ? members : [];
+      this.showingGroupMembers[groupId] = true;
+      this.loadingGroupMembers[groupId] = false;
+      console.log(`Loaded ${this.groupMembers[groupId].length} members for group ${groupId}`, members);
+    },
+    error: (error) => {
+      console.error(`Error loading members for group ${groupId}:`, error);
+      this.loadingGroupMembers[groupId] = false;
+      this.groupMembers[groupId] = [];
+    }
+  });
+}
+
+  createGroupAppointment(appointment: GroupAppointment): void {
+    appointment.instructorId = this.currentInstructorId;
+
     this.groupAppointmentService.createGroup(appointment).subscribe({
       next: (data) => {
         console.log('Group appointment created successfully:', data);
@@ -171,45 +304,9 @@ export class InstructorSchedulerComponent implements OnInit {
     });
   }
 
-  deleteGroupAppointment(id: number | undefined): void {
-    if (!id) return;
-    console.log('Attempting to delete group appointment with id:', id);
-
-    if (confirm('Are you sure you want to delete this group appointment?')) {
-      this.groupAppointmentService.deleteGroup(id).subscribe({
-        next: (data) => {
-          if (data)
-          {
-          console.log('Group appointment deleted successfully');
-          this.loadGroupAppointments(); // Reload the list
-          }
-        },
-        error: (error) => {
-          this.groupError = 'Failed to delete group appointment';
-          console.error('Error deleting group appointment:', error);
-        }
-      });
-    }
-  }
-loadIndividualAppointments(): void {
-    this.individualLoading = true;
-    this.individualError = null;
-
-    this.individualAppointmentService.getAllIndividualAppointments().subscribe({
-      next: (data) => {
-        this.individualAppointments = data;
-        this.individualLoading = false;
-        console.log('Loaded individual appointments:', data);
-      },
-      error: (error) => {
-        this.individualError = 'Failed to load individual appointments';
-        this.individualLoading = false;
-        console.error('Error loading individual appointments:', error);
-      }
-    });
-  }
-
   createIndividualAppointment(appointment: IndividualAppointment): void {
+    appointment.instructorId = this.currentInstructorId;
+
     this.individualAppointmentService.createIndividualAppointment(appointment).subscribe({
       next: (data) => {
         console.log('Individual appointment created successfully:', data);
@@ -222,16 +319,34 @@ loadIndividualAppointments(): void {
     });
   }
 
+  deleteGroupAppointment(id: number | undefined): void {
+    if (!id) return;
+
+    if (confirm('Are you sure you want to delete this group appointment?')) {
+      this.groupAppointmentService.deleteGroup(id).subscribe({
+        next: (data) => {
+          if (data) {
+            console.log('Group appointment deleted successfully');
+            this.loadGroupAppointments();
+          }
+        },
+        error: (error) => {
+          this.groupError = 'Failed to delete group appointment';
+          console.error('Error deleting group appointment:', error);
+        }
+      });
+    }
+  }
+
   deleteIndividualAppointment(appointmentId: number | undefined): void {
     if (!appointmentId) return;
-    
+
     if (confirm('Are you sure you want to delete this individual appointment?')) {
       this.individualAppointmentService.deleteIndividualAppointment(appointmentId).subscribe({
         next: (data) => {
-          if (data)
-          {
-          console.log('Individual appointment deleted successfully');
-          this.loadIndividualAppointments();
+          if (data) {
+            console.log('Individual appointment deleted successfully');
+            this.loadIndividualAppointments();
           }
         },
         error: (error) => {
@@ -242,10 +357,10 @@ loadIndividualAppointments(): void {
     }
   }
 
-    openCreateAppointmentDialog(): void {
+  openCreateAppointmentDialog(): void {
     const dialogRef = this.dialog.open(CreateAppointmentDialogComponent, {
       width: '600px',
-      data: { instructorId: 1 },
+      data: { instructorId: this.currentInstructorId },
     });
 
     dialogRef.afterClosed().subscribe((result: AppointmentDialogResult | undefined) => {
@@ -260,6 +375,21 @@ loadIndividualAppointments(): void {
       }
     });
   }
+
+  getStudentName(booking: BookedIndividualAppointment | BookedGroupAppointment): string {
+    if (booking.studentDetails) {
+      return `${booking.studentDetails.firstName} ${booking.studentDetails.lastName}`;
+    }
+    return 'Unknown Student';
+  }
+
+  getStudentEmail(booking: BookedIndividualAppointment | BookedGroupAppointment): string {
+    return booking.studentDetails?.email || 'N/A';
+  }
+
+isArray(value: any): boolean {
+  return Array.isArray(value);
+}
 
   formatTime(time: string | undefined): string {
     if (!time) return 'N/A';

@@ -16,7 +16,6 @@ export class IndividualAppointmentService {
   constructor(private httpClient: HttpClient) {
   }
 
-  // Individual Appointments
   getAllIndividualAppointments(): Observable<IndividualAppointment[]> {
     return this.httpClient.get<IndividualAppointment[]>(`${this.baseUrl}/individual`);
   }
