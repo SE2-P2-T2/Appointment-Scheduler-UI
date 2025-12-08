@@ -36,35 +36,41 @@ export class App implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.updateToolbarVisibility();
+      const currentRoute = this.router.url;
+      const isProtectedRoute = currentRoute.includes('/student-scheduler') ||
+                               currentRoute.includes('/instructor-scheduler') ||
+                               currentRoute.includes('/admin') ||
+                               currentRoute.includes('/ta-dashboard') ||
+                               currentRoute.includes('/group-management');
+
+      if (!user && isProtectedRoute && currentRoute !== '/login' && currentRoute !== '/register') {
+        this.router.navigate(['/login']);
+      }
     });
 
-
+    // Update toolbar visibility on navigation
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.updateToolbarVisibility();
     });
 
-
+    // Initial toolbar update
     this.updateToolbarVisibility();
-
-
-    if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/login']);
-    }
   }
 
   updateToolbarVisibility(): void {
     const currentRoute = this.router.url;
-    
 
-    this.showToolbar = this.currentUser !== null && 
-                       (currentRoute.includes('/student-scheduler') || 
-                        currentRoute.includes('/instructor-scheduler'));
+
+    this.showToolbar = this.currentUser !== null &&
+                       (currentRoute.includes('/student-scheduler') ||
+                        currentRoute.includes('/instructor-scheduler') ||
+                        currentRoute.includes('/admin') ||
+                        currentRoute.includes('/ta-dashboard'));
   }
 
   logout(): void {

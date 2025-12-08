@@ -60,16 +60,17 @@ export class Login {
         const user = users.find(u => u.email === email);
         
         if (user) {
-
-          this.authService['setCurrentUser'](user);
+          this.authService.setCurrentUser(user);
           this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
-          
-          if (user.role.roleId === UserRole.INSTRUCTOR || user.role.roleId === UserRole.TA) {
+
+          if (user.role.roleId === UserRole.INSTRUCTOR) {
             this.router.navigate(['/instructor-scheduler']);
+          } else if (user.role.roleId === UserRole.TA) {
+            this.router.navigate(['/ta-dashboard']);
           } else if (user.role.roleId === UserRole.STUDENT) {
             this.router.navigate(['/student-scheduler']);
-      } else if (user.role.roleId === UserRole.ADMIN) {
-        this.router.navigate(['/admin']);
+          } else if (user.role.roleId === UserRole.ADMIN) {
+            this.router.navigate(['/admin']);
           } else {
             this.router.navigate(['/']);
           }
