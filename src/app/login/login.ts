@@ -68,6 +68,8 @@ export class Login {
             this.router.navigate(['/instructor-scheduler']);
           } else if (user.role.roleId === UserRole.STUDENT) {
             this.router.navigate(['/student-scheduler']);
+      } else if (user.role.roleId === UserRole.ADMIN) {
+        this.router.navigate(['/admin']);
           } else {
             this.router.navigate(['/']);
           }
