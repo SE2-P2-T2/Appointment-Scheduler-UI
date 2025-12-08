@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { SchedulerAppointment, BookingRequest, CancelBookingRequest } from '../models/Booking';
 import { User } from '../models/User';
+import { GroupMember } from '../models/GroupMember';
 
 @Injectable({
   providedIn: 'root'
@@ -12,91 +13,101 @@ export class SchedulerService {
   private baseUrl = `${environment.schedulerServiceUrl}/api/scheduler`;
 
   constructor(private http: HttpClient) {}
-
-  getAllInstructors(): Observable<User[]> {
-    return this.http.get<User[]>(`${environment.userServiceUrl}/api/users/getProfessors`);
+  
+  bookIndividualAppointment(
+    studentId: number,
+    appointmentId: number,
+    description: string
+  ): Observable<SchedulerAppointment> {
+    return this.http.post<SchedulerAppointment>(
+      `${this.baseUrl}/book/individual`,
+      { studentId, appointmentId, description }
+    );
   }
 
-  getInstructorById(instructorId: number): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/instructors/${instructorId}`);
+  joinGroup(studentId: number, groupId: number): Observable<GroupMember> {
+    return this.http.post<GroupMember>(
+      `${this.baseUrl}/group/${groupId}/join`,
+      { studentId }
+    );
   }
 
-  getStudentById(studentId: number): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/students/${studentId}`);
+  bookGroupForAll(
+    studentId: number,
+    groupId: number,
+    description: string
+  ): Observable<SchedulerAppointment> {
+    return this.http.post<SchedulerAppointment>(
+      `${this.baseUrl}/group/${groupId}/book`,
+      { studentId, description }
+    );
   }
 
-  bookIndividualAppointment(studentId: number, appointmentId: number, description: string): Observable<SchedulerAppointment> {
-    const request: BookingRequest = {
-      studentId,
-      appointmentId,
-      status:'confirmed',
-      description
-    };
-    return this.http.post<SchedulerAppointment>(`${this.baseUrl}/book/individual`, request);
+  leaveGroup(studentId: number, groupId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.baseUrl}/group/${groupId}/leave`,
+      { params: { studentId: studentId.toString() } }
+    );
   }
 
-
-  bookGroupAppointment(studentId: number, groupId: number, description: string): Observable<SchedulerAppointment> {
-    const request: BookingRequest = {
-      studentId,
-      groupId,
-      status:'confirmed',
-      description
-    };
-    return this.http.post<SchedulerAppointment>(`${this.baseUrl}/book/group`, request);
+  isUserMemberOfGroup(studentId: number, groupId: number): Observable<boolean> {
+    return this.http.get<boolean>(
+      `${this.baseUrl}/group/${groupId}/is-member`,
+      { params: { studentId: studentId.toString() } }
+    );
   }
 
-
-  cancelBooking(bookingId: number, reason: string): Observable<void> {
-    const request: CancelBookingRequest = { reason };
-    return this.http.put<void>(`${this.baseUrl}/cancel/${bookingId}`, request);
+  getGroupMembers(groupId: number): Observable<GroupMember[]> {
+    return this.http.get<GroupMember[]>(
+      `${this.baseUrl}/group/${groupId}/members`
+    );
   }
-
 
   getStudentBookings(studentId: number): Observable<SchedulerAppointment[]> {
-    return this.http.get<SchedulerAppointment[]>(`${this.baseUrl}/student/${studentId}`);
+    return this.http.get<SchedulerAppointment[]>(
+      `${this.baseUrl}/student/${studentId}`
+    );
   }
 
+  getAllBookings(): Observable<SchedulerAppointment[]> {
+    return this.http.get<SchedulerAppointment[]>(
+      `${this.baseUrl}/bookings/all`
+    );
+  }
 
-  cancelGroupForAll(bookingId: number, reason: string): Observable<void> {
+  cancelBooking(bookingId: number, reason: string): Observable<void> {
     return this.http.put<void>(
-      `${this.baseUrl}/cancel/group/${bookingId}`,
+      `${this.baseUrl}/cancel/${bookingId}`,
       { reason }
     );
   }
 
-
-  getIndividualBookingsByInstructor(instructorId: number): Observable<SchedulerAppointment[]> {
-    return this.http.get<SchedulerAppointment[]>(`${this.baseUrl}/bookings/individual/instructor/${instructorId}`);
-  }
-
- 
-  getGroupBookingsByInstructor(instructorId: number): Observable<SchedulerAppointment[]> {
-    return this.http.get<SchedulerAppointment[]>(`${this.baseUrl}/bookings/group/instructor/${instructorId}`);
+  getInstructors(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/instructors`);
   }
 
 
-  getIndividualBookings(): Observable<SchedulerAppointment[]> {
-    return this.http.get<SchedulerAppointment[]>(`${this.baseUrl}/bookings/individual`);
-  }
+getIndividualBookings(): Observable<SchedulerAppointment[]> {
+  return this.http.get<SchedulerAppointment[]>(
+    `${this.baseUrl}/bookings/individual`
+  );
+}
 
+getGroupBookings(): Observable<SchedulerAppointment[]> {
+  return this.http.get<SchedulerAppointment[]>(
+    `${this.baseUrl}/bookings/group`
+  );
+}
 
-  getGroupBookings(): Observable<SchedulerAppointment[]> {
-    return this.http.get<SchedulerAppointment[]>(`${this.baseUrl}/bookings/group`);
-  }
+getBookingsByType(bookingType: string): Observable<SchedulerAppointment[]> {
+  return this.http.get<SchedulerAppointment[]>(
+    `${this.baseUrl}/bookings/type/${bookingType}`
+  );
+}
 
-
-  getAllBookings(): Observable<SchedulerAppointment[]> {
-    return this.http.get<SchedulerAppointment[]>(`${this.baseUrl}/bookings/all`);
-  }
-
-
-  getBookingsByType(bookingType: string): Observable<SchedulerAppointment[]> {
-    return this.http.get<SchedulerAppointment[]>(`${this.baseUrl}/bookings/type/${bookingType}`);
-  }
-
-
-  getBookingsByStatus(status: string): Observable<SchedulerAppointment[]> {
-    return this.http.get<SchedulerAppointment[]>(`${this.baseUrl}/bookings/status/${status}`);
-  }
+getBookingsByStatus(status: string): Observable<SchedulerAppointment[]> {
+  return this.http.get<SchedulerAppointment[]>(
+    `${this.baseUrl}/bookings/status/${status}`
+  );
+}
 }

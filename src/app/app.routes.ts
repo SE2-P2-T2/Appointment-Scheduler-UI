@@ -4,6 +4,7 @@ import { Login } from './login/login';
 import { Register } from './register/register';
 import { AuthGuard } from './service/auth.guard';
 import { InstructorSchedulerComponent } from './instructor-scheduler-component/instructor-scheduler-component';
+import { GroupManagementComponent } from './group-management.component/group-management.component';
 import { AdminComponent } from './admin-component/admin-component';
 
 export const routes: Routes = [
@@ -13,6 +14,11 @@ export const routes: Routes = [
   { 
     path: 'student-scheduler', 
     component: Scheduler,
+    canActivate: [AuthGuard]
+  },
+    { 
+    path: 'group-management', 
+    component: GroupManagementComponent,
     canActivate: [AuthGuard]
   },
   { 

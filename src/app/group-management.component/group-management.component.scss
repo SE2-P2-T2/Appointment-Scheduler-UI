@@ -1,0 +1,558 @@
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+// ==================== PAGE HEADER ====================
+
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+
+    .header-text {
+      h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 8px 0 0 0;
+        font-size: 16px;
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+// ==================== SECTION STYLES ====================
+
+.section {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.section-header {
+  margin-bottom: 24px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 16px;
+
+  &.highlight-header {
+    border-bottom-color: #4caf50;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #1976d2;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+
+  .section-subtitle {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    padding-left: 44px;
+  }
+}
+
+.section-content {
+  margin-top: 24px;
+}
+
+// ==================== INFO BANNER ====================
+
+.info-banner {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background-color: #e3f2fd;
+  border-left: 4px solid #1976d2;
+  border-radius: 6px;
+  margin-bottom: 24px;
+
+  mat-icon {
+    color: #1976d2;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .info-text {
+    flex: 1;
+
+    strong {
+      color: #1976d2;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    p {
+      margin: 0;
+      color: #555;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  }
+}
+
+// ==================== CARD GRID ====================
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+// ==================== INSTRUCTOR CARDS ====================
+
+.instructor-card {
+  transition: all 0.3s ease;
+  border-left: 4px solid #9c27b0;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  &.selected {
+    border-left-color: #ff4081;
+    background-color: #fce4ec;
+  }
+
+  .instructor-avatar {
+    background-color: #9c27b0;
+    color: white;
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .instructor-username {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 14px;
+    margin: 8px 0;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #999;
+    }
+  }
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  mat-card-subtitle {
+    color: #666;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  mat-card-actions {
+    padding: 16px;
+    
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// ==================== GROUP CARDS ====================
+
+.group-card {
+  transition: all 0.3s ease;
+  border-left: 4px solid #ff9800;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  &.member-card {
+    border-left-color: #2196f3;
+    background-color: #e3f2fd;
+  }
+
+  &.my-group-card {
+    border-left-color: #4caf50;
+    background-color: #e8f5e9;
+  }
+
+  &.full-card {
+    border-left-color: #f44336;
+    background-color: #ffebee;
+    opacity: 0.85;
+
+    &:hover {
+      transform: none;
+      box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+    }
+  }
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+
+    mat-icon {
+      color: #ff9800;
+    }
+  }
+
+  &.my-group-card mat-card-title mat-icon {
+    color: #4caf50;
+  }
+
+  mat-card-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    color: #666;
+    font-size: 13px;
+    margin-top: 4px;
+
+    .member-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background-color: #4caf50;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+
+  mat-card-actions {
+    padding: 16px;
+    
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// ==================== GROUP DETAILS ====================
+
+.group-details {
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    color: #555;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    mat-icon {
+      color: #999;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    span {
+      flex: 1;
+      font-size: 14px;
+    }
+
+    button.show-members-btn {
+      margin-top: 8px;
+      width: 100%;
+    }
+  }
+}
+
+// ==================== CAPACITY STYLES ====================
+
+.capacity-indicator {
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  margin: 0 8px;
+  font-weight: 600;
+  
+  &.full {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+}
+
+.capacity-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #4caf50;
+  color: white;
+  margin-left: 8px;
+  
+  &.full {
+    background-color: #f44336;
+  }
+}
+
+// ==================== MEMBERS LIST ====================
+
+.members-list {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #2196f3;
+}
+
+.loading-members {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.members-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: #2196f3;
+  color: white;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background-color: white;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  border-left: 2px solid #4caf50;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .member-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: #2196f3;
+    color: white;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 11px;
+  }
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #666;
+  }
+
+  .member-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 13px;
+  }
+}
+
+.no-members {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  color: #999;
+  font-style: italic;
+  font-size: 13px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ==================== LOADING & EMPTY STATES ====================
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #999;
+
+  mat-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.no-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #999;
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 4px 0;
+    font-size: 16px;
+  }
+}
+
+// ==================== RESPONSIVE DESIGN ====================
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+
+  .page-header {
+    padding: 24px;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .back-button {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+
+      mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+}
+  }
+
+  .section {
+    padding: 20px;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    .section-title {
+      h2 {
+        font-size: 24px;
+      }
+
+      mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+  }
+}
