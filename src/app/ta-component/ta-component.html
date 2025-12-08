@@ -1,0 +1,203 @@
+<div class="page-container">
+  <div class="navigation-bar">
+    <h1 class="page-title">
+      <mat-icon>assignment</mat-icon>
+      TA Dashboard
+    </h1>
+    <div class="professor-info">
+      <mat-icon>school</mat-icon>
+      <span>Viewing appointments for: <strong>{{ getProfessorName() }}</strong></span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <mat-icon>bookmark</mat-icon>
+        <h2>Booked Appointments</h2>
+      </div>
+      <p class="section-subtitle">View all booked appointments for your assigned professor (Read-Only)</p>
+    </div>
+
+    <div class="section-content">
+      <div *ngIf="bookedLoading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading booked appointments...</p>
+      </div>
+
+      <div *ngIf="bookedError" class="error-container">
+        <p class="error-message">{{ bookedError }}</p>
+        <button mat-raised-button color="primary" (click)="loadBookedAppointments()">
+          Retry
+        </button>
+      </div>
+
+      <div *ngIf="!bookedLoading && !bookedError && bookedGroupAppointments.length === 0 && bookedIndividualAppointments.length === 0" class="no-data-container">
+        <mat-icon>inbox</mat-icon>
+        <p>No appointments have been booked yet.</p>
+        <p class="hint-text">Students haven't booked any appointments with your assigned professor.</p>
+      </div>
+
+      <div *ngIf="!bookedLoading && !bookedError">
+        <div class="subsection" *ngIf="bookedGroupAppointments.length > 0">
+          <div class="subsection-header">
+            <mat-icon>groups</mat-icon>
+            <h3>Group Appointments</h3>
+            <span class="count-badge">{{ bookedGroupAppointments.length }}</span>
+          </div>
+
+          <div class="cards-grid">
+            <mat-card
+              *ngFor="let booking of bookedGroupAppointments"
+              class="appointment-card booked-card"
+              appearance="outlined">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>group</mat-icon>
+                  {{ booking.groupDetails?.groupName || 'Group Appointment' }}
+                </mat-card-title>
+                <mat-card-subtitle>
+                  Booked by: {{ getStudentName(booking) }}
+                </mat-card-subtitle>
+              </mat-card-header>
+
+              <mat-card-content>
+                <div class="appointment-details">
+                  <div class="detail-row">
+                    <mat-icon>schedule</mat-icon>
+                    <span>{{ formatTime(booking.groupDetails?.startTime) }} - {{ formatTime(booking.groupDetails?.endTime) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>people</mat-icon>
+                    <span><strong>Max Participants:</strong> {{ booking.groupDetails?.maxLimit || 'N/A' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>description</mat-icon>
+                    <span>{{ booking.groupDetails?.description || 'No description' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>email</mat-icon>
+                    <span>{{ getStudentEmail(booking) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>calendar_today</mat-icon>
+                    <span>Booked: {{ formatDate(booking.bookedAt) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>info</mat-icon>
+                    <span class="status-badge booked">{{ booking.status.toUpperCase() }}</span>
+                  </div>
+                </div>
+
+                <div *ngIf="booking.groupId && groupMemberCounts[booking.groupId!] > 0" class="group-members-section">
+                  <button
+                    mat-stroked-button
+                    color="accent"
+                    (click)="toggleGroupMembers(booking.groupId!)"
+                    class="show-members-btn-inline">
+                    <mat-icon>{{ showingGroupMembers[booking.groupId!] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    {{ showingGroupMembers[booking.groupId!] ? 'Hide' : 'View' }} Group Members
+                    ({{ groupMemberCounts[booking.groupId!] }})
+                  </button>
+
+                  <div *ngIf="loadingGroupMembers[booking.groupId!]" class="loading-members-inline">
+                    <mat-spinner diameter="24"></mat-spinner>
+                  </div>
+
+                  <div *ngIf="showingGroupMembers[booking.groupId!] && !loadingGroupMembers[booking.groupId!]"
+                       class="members-list-inline">
+                    <ng-container *ngIf="groupMembers[booking.groupId!] && isArray(groupMembers[booking.groupId!]) && groupMembers[booking.groupId!].length > 0">
+                      <div class="members-header-inline">
+                        <mat-icon>people</mat-icon>
+                        <span>Group Members ({{ groupMembers[booking.groupId!].length }})</span>
+                      </div>
+                      <div *ngFor="let member of groupMembers[booking.groupId!]; let i = index" class="member-item-inline">
+                        <span class="member-number">{{ i + 1 }}</span>
+                        <mat-icon>person</mat-icon>
+                        <span class="member-name">{{ member.memberFirstName }} {{ member.memberLastName }}</span>
+                      </div>
+                    </ng-container>
+
+                    <div *ngIf="!groupMembers[booking.groupId!] || !isArray(groupMembers[booking.groupId!]) || groupMembers[booking.groupId!].length === 0"
+                         class="no-members-inline">
+                      <mat-icon>info</mat-icon>
+                      <span>No members yet</span>
+                    </div>
+                  </div>
+                </div>
+              </mat-card-content>
+
+              <mat-card-actions>
+                <div class="readonly-badge">
+                  <mat-icon>visibility</mat-icon>
+                  <span>Read-Only View</span>
+                </div>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        </div>
+
+        <div class="subsection" *ngIf="bookedIndividualAppointments.length > 0">
+          <div class="subsection-header">
+            <mat-icon>person</mat-icon>
+            <h3>Individual Appointments</h3>
+            <span class="count-badge">{{ bookedIndividualAppointments.length }}</span>
+          </div>
+
+          <div class="cards-grid">
+            <mat-card
+              *ngFor="let booking of bookedIndividualAppointments"
+              class="appointment-card booked-card"
+              appearance="outlined">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>description</mat-icon>
+                  {{ booking.appointmentDetails?.description || 'Individual Appointment' }}
+                </mat-card-title>
+                <mat-card-subtitle>
+                  Student: {{ getStudentName(booking) }}
+                </mat-card-subtitle>
+              </mat-card-header>
+
+              <mat-card-content>
+                <div class="appointment-details">
+                  <div class="detail-row">
+                    <mat-icon>event</mat-icon>
+                    <span>{{ formatFullDate(booking.appointmentDetails?.appointmentDate) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>schedule</mat-icon>
+                    <span>{{ formatTime(booking.appointmentDetails?.startTime) }} - {{ formatTime(booking.appointmentDetails?.endTime) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>place</mat-icon>
+                    <span>{{ booking.appointmentDetails?.location || 'Location TBD' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>email</mat-icon>
+                    <span>{{ getStudentEmail(booking) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>calendar_today</mat-icon>
+                    <span>Booked: {{ formatDate(booking.bookedAt) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <mat-icon>info</mat-icon>
+                    <span class="status-badge booked">{{ booking.status.toUpperCase() }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+
+              <mat-card-actions>
+                <div class="readonly-badge">
+                  <mat-icon>visibility</mat-icon>
+                  <span>Read-Only View</span>
+                </div>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

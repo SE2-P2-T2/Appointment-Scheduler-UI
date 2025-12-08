@@ -6,6 +6,7 @@ import { AuthGuard } from './service/auth.guard';
 import { InstructorSchedulerComponent } from './instructor-scheduler-component/instructor-scheduler-component';
 import { GroupManagementComponent } from './group-management.component/group-management.component';
 import { AdminComponent } from './admin-component/admin-component';
+import { TaComponent } from './ta-component/ta-component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -26,9 +27,14 @@ export const routes: Routes = [
     component: InstructorSchedulerComponent,
     canActivate: [AuthGuard]
   },
-  { 
-    path: 'admin', 
+  {
+    path: 'admin',
     component: AdminComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'ta-dashboard',
+    component: TaComponent,
     canActivate: [AuthGuard]
   },
   { path: '**', redirectTo: '/login' }
