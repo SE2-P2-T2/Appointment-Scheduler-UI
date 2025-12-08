@@ -1,4 +1,19 @@
 <div class="page-container">
+  <div class="navigation-bar">
+    <h1 class="page-title">
+      <mat-icon>event</mat-icon>
+      Appointment Scheduler
+    </h1>
+    <button 
+      mat-raised-button 
+      color="accent"
+      (click)="goToGroupManagement()"
+      class="nav-button">
+      <mat-icon>groups</mat-icon>
+      Join Group Slots
+    </button>
+  </div>
+
   <div class="section">
     <div class="section-header">
       <div class="section-title">
@@ -131,8 +146,15 @@
       <div class="subsection">
         <div class="subsection-header">
           <mat-icon>groups</mat-icon>
-          <h3>Group Appointments</h3>
+          <h3>My Group Appointments</h3>
           <span class="count-badge">{{ availableGroupAppointments.length }}</span>
+        </div>
+
+        <div class="info-banner">
+          <mat-icon>info</mat-icon>
+          <div class="info-text">
+            <p><strong>Note:</strong> Only groups you've joined are shown here. To join new groups, click the "Join Group Slots" button above.</p>
+          </div>
         </div>
 
         <div *ngIf="loadingGroup" class="loading-container">
@@ -142,13 +164,17 @@
 
         <div *ngIf="!loadingGroup && availableGroupAppointments.length === 0" class="no-data-container">
           <mat-icon>event_busy</mat-icon>
-          <p>No group appointment slots available.</p>
+          <p>You haven't joined any groups yet.</p>
+          <button mat-raised-button color="primary" (click)="goToGroupManagement()">
+            <mat-icon>group_add</mat-icon>
+            Join Groups
+          </button>
         </div>
 
         <div *ngIf="!loadingGroup && availableGroupAppointments.length > 0" class="cards-grid">
           <mat-card 
             *ngFor="let appointment of availableGroupAppointments"
-            class="appointment-card available-card" 
+            class="appointment-card group-card" 
             [class.full-card]="isGroupFull(appointment.groupId!)"
             appearance="outlined">
             <mat-card-header>
@@ -158,6 +184,9 @@
               </mat-card-title>
               <mat-card-subtitle>
                 Group ID: {{ appointment.groupId }}
+                <span class="member-badge">
+                  <mat-icon>check_circle</mat-icon> You're a member
+                </span>
               </mat-card-subtitle>
             </mat-card-header>
             
@@ -171,12 +200,15 @@
                 <div class="detail-row capacity-row">
                   <mat-icon>people</mat-icon>
                   <span *ngIf="!loadingGroupCapacity[appointment.groupId!]">
-                    <strong>Capacity:</strong> 
+                    <strong>Members:</strong> 
                     <span class="capacity-indicator" [class.full]="isGroupFull(appointment.groupId!)">
                       {{ groupMemberCounts[appointment.groupId!] || 0 }} / {{ appointment.maxLimit }}
                     </span>
-                    <span class="capacity-badge" [class.full]="isGroupFull(appointment.groupId!)">
-                      {{ isGroupFull(appointment.groupId!) ? 'FULL' : 'AVAILABLE' }}
+                    <span class="capacity-badge" 
+                          [class.full]="isGroupFull(appointment.groupId!)"
+                          [class.ready]="hasMinimumMembers(appointment.groupId!) && !isGroupFull(appointment.groupId!)">
+                      {{ isGroupFull(appointment.groupId!) ? 'FULL' : 
+                         hasMinimumMembers(appointment.groupId!) ? 'READY TO BOOK' : 'NEED MORE MEMBERS' }}
                     </span>
                   </span>
                   <mat-spinner *ngIf="loadingGroupCapacity[appointment.groupId!]" diameter="20"></mat-spinner>
@@ -186,11 +218,41 @@
                   <mat-icon>description</mat-icon>
                   <span>{{ appointment.description || 'No description' }}</span>
                 </div>
-                <div class="detail-row">
-                  <mat-icon>info</mat-icon>
-                  <span class="status-badge" [class.full]="isGroupFull(appointment.groupId!)">
-                    {{ isGroupFull(appointment.groupId!) ? 'FULL' : 'AVAILABLE' }}
-                  </span>
+
+                <div class="detail-row" *ngIf="groupMemberCounts[appointment.groupId!] > 0">
+                  <button 
+                    mat-stroked-button 
+                    color="accent" 
+                    (click)="toggleGroupMembers(appointment.groupId!)"
+                    class="show-members-btn-inline">
+                    <mat-icon>{{ showingGroupMembers[appointment.groupId!] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    {{ showingGroupMembers[appointment.groupId!] ? 'Hide' : 'View' }} Members 
+                    ({{ groupMemberCounts[appointment.groupId!] }})
+                  </button>
+                </div>
+
+
+                <div *ngIf="showingGroupMembers[appointment.groupId!]" class="members-list-inline">
+                  <div *ngIf="loadingGroupMembers[appointment.groupId!]" class="loading-members-inline">
+                    <mat-spinner diameter="24"></mat-spinner>
+                  </div>
+                  
+                  <ng-container *ngIf="!loadingGroupMembers[appointment.groupId!] && groupMembers[appointment.groupId!] && isArray(groupMembers[appointment.groupId!]) && groupMembers[appointment.groupId!].length > 0">
+                    <div class="members-header-inline">
+                      <mat-icon>people</mat-icon>
+                      <span>Current Members</span>
+                    </div>
+                    <div *ngFor="let member of groupMembers[appointment.groupId!]; let i = index" class="member-item-inline">
+                      <span class="member-number">{{ i + 1 }}</span>
+                      <mat-icon>person</mat-icon>
+                      <span class="member-name">{{ member.memberFirstName }} {{ member.memberLastName }}</span>
+                    </div>
+                  </ng-container>
+                  
+                  <div *ngIf="!loadingGroupMembers[appointment.groupId!] && (!groupMembers[appointment.groupId!] || groupMembers[appointment.groupId!].length === 0)" class="no-members-inline">
+                    <mat-icon>info</mat-icon>
+                    <span>No members yet</span>
+                  </div>
                 </div>
               </div>
             </mat-card-content>
@@ -198,11 +260,11 @@
             <mat-card-actions>
               <button 
                 mat-raised-button 
-                [color]="isGroupFull(appointment.groupId!) ? 'warn' : 'primary'"
-                [disabled]="isGroupFull(appointment.groupId!)"
-                (click)="bookGroupAppointment(appointment.groupId!, appointment.description || '')">
-                <mat-icon>{{ isGroupFull(appointment.groupId!) ? 'block' : 'event_available' }}</mat-icon>
-                {{ isGroupFull(appointment.groupId!) ? 'Group Full' : 'Join Group Slot' }}
+                [color]="hasMinimumMembers(appointment.groupId!) ? 'accent' : 'primary'"
+                [disabled]="!hasMinimumMembers(appointment.groupId!)"
+                (click)="bookGroupForAll(appointment.groupId!, appointment.description || '')">
+                <mat-icon>{{ hasMinimumMembers(appointment.groupId!) ? 'event_available' : 'schedule' }}</mat-icon>
+                {{ hasMinimumMembers(appointment.groupId!) ? 'Book for All Members' : 'Need 2+ Members to Book' }}
               </button>
             </mat-card-actions>
           </mat-card>
@@ -221,10 +283,12 @@
     </div>
 
     <div class="section-content">
+
       <div *ngIf="loadingBookings" class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
         <p>Loading your bookings...</p>
       </div>
+
 
       <div *ngIf="!loadingBookings && myBookings.length === 0" class="no-data-container">
         <mat-icon>inbox</mat-icon>
@@ -245,6 +309,9 @@
             </mat-card-title>
             <mat-card-subtitle>
               Booking ID: #{{ booking.bookingId }}
+              <span *ngIf="booking.bookingType === 'group'" class="group-badge">
+                <mat-icon>group</mat-icon> Group Booking
+              </span>
             </mat-card-subtitle>
           </mat-card-header>
           
@@ -269,7 +336,6 @@
                 <span class="cancellation-reason">{{ booking.cancellationReason }}</span>
               </div>
             </div>
-
 
             <div *ngIf="booking.bookingType === 'group' && booking.groupId && booking.status === 'confirmed'" class="group-members-section">
               <button 
@@ -302,29 +368,20 @@
                 <div *ngIf="!myGroupMembers[booking.groupId!] || !isArray(myGroupMembers[booking.groupId!]) || myGroupMembers[booking.groupId!].length === 0" 
                      class="no-members">
                   <mat-icon>info</mat-icon>
-                  <span>No other members yet</span>
+                  <span>No members found</span>
                 </div>
               </div>
             </div>
-
           </mat-card-content>
           
           <mat-card-actions>
             <button 
               mat-button 
               color="warn"
-              *ngIf="booking.status === 'confirmed' && booking.bookingType === 'individual'"
+              *ngIf="booking.status === 'confirmed'"
               (click)="cancelBooking(booking.bookingId!)">
               <mat-icon>cancel</mat-icon>
-              Cancel Booking
-            </button>
-            <button 
-              mat-button 
-              color="warn"
-              *ngIf="booking.status === 'confirmed' && booking.bookingType === 'group'"
-              (click)="cancelGroupBooking(booking.bookingId!, booking.groupId!)">
-              <mat-icon>cancel</mat-icon>
-              Cancel for All Members
+              {{ booking.bookingType === 'group' ? 'Cancel Group Booking' : 'Cancel Booking' }}
             </button>
             <button 
               mat-button 

@@ -15,8 +15,8 @@ export class GroupAppointmentService {
 
   constructor(private httpClient: HttpClient) {}
 
-  getAllGroups(): Observable<GroupAppointment[]> {
-    return this.httpClient.get<GroupAppointment[]>(`${this.baseUrl}/getgroups`);
+ getAllGroups(): Observable<GroupAppointment[]> {
+    return this.httpClient.get<GroupAppointment[]>(this.baseUrl);
   }
 
   getGroupById(id: number): Observable<GroupAppointment> {
@@ -25,6 +25,10 @@ export class GroupAppointmentService {
 
   createGroup(group: GroupAppointment): Observable<GroupAppointment> {
     return this.httpClient.post<GroupAppointment>(this.baseUrl, group);
+  }
+
+  updateGroup(id: number, group: GroupAppointment): Observable<GroupAppointment> {
+    return this.httpClient.put<GroupAppointment>(`${this.baseUrl}/${id}`, group);
   }
 
   deleteGroup(id: number): Observable<GroupAppointment> {
@@ -37,5 +41,8 @@ export class GroupAppointmentService {
 
   getGroupMemberCount(groupId: number): Observable<number> {
     return this.httpClient.get<number>(`${this.baseGroupMemberUrl}/group/${groupId}/count`);
+  }
+  canBookGroup(groupId: number): Observable<boolean> {
+    return this.httpClient.get<boolean>(`${this.baseUrl}/${groupId}/can-book`);
   }
 }

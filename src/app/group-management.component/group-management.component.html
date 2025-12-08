@@ -1,0 +1,323 @@
+<div class="page-container">
+  
+  <div class="page-header">
+    <div class="header-content">
+      <button 
+        mat-icon-button 
+        class="back-button"
+        (click)="goBackToScheduler()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <mat-icon>groups</mat-icon>
+      <div class="header-text">
+        <h1>Group Management</h1>
+        <p>Join groups and collaborate with other students</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <mat-icon>school</mat-icon>
+        <h2>Select Instructor</h2>
+      </div>
+      <p class="section-subtitle">Choose an instructor to view their available groups</p>
+    </div>
+
+    <div class="section-content">
+      <div *ngIf="loadingInstructors" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading instructors...</p>
+      </div>
+
+      <div *ngIf="!loadingInstructors" class="cards-grid">
+        <mat-card 
+          *ngFor="let instructor of instructors"
+          class="instructor-card" 
+          [class.selected]="selectedInstructor?.userId === instructor.userId"
+          appearance="outlined">
+          <mat-card-header>
+            <div mat-card-avatar class="instructor-avatar">
+              <mat-icon>account_circle</mat-icon>
+            </div>
+            <mat-card-title>{{ getInstructorFullName(instructor) }}</mat-card-title>
+            <mat-card-subtitle>{{ instructor.email }}</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <p class="instructor-username">
+              <mat-icon>alternate_email</mat-icon>
+              <span>{{ instructor.username || 'N/A' }}</span>
+            </p>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button 
+              mat-raised-button 
+              [color]="selectedInstructor?.userId === instructor.userId ? 'accent' : 'primary'"
+              (click)="selectInstructor(instructor)">
+              <mat-icon>{{ selectedInstructor?.userId === instructor.userId ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+              {{ selectedInstructor?.userId === instructor.userId ? 'Selected' : 'Select' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <div *ngIf="!loadingInstructors && instructors.length === 0" class="no-data-container">
+        <mat-icon>info</mat-icon>
+        <p>No instructors available at the moment.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" *ngIf="selectedInstructor && myGroups.length > 0">
+    <div class="section-header highlight-header">
+      <div class="section-title">
+        <mat-icon>check_circle</mat-icon>
+        <h2>My Groups</h2>
+      </div>
+      <p class="section-subtitle">Groups you have joined</p>
+    </div>
+
+    <div class="section-content">
+      <div class="cards-grid">
+        <mat-card 
+          *ngFor="let group of myGroups"
+          class="group-card my-group-card"
+          appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>group</mat-icon>
+              {{ group.groupName || 'Group Appointment' }}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Group ID: {{ group.groupId }}
+              <span class="member-badge">
+                <mat-icon>check_circle</mat-icon> Member
+              </span>
+            </mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="group-details">
+              <div class="detail-row">
+                <mat-icon>schedule</mat-icon>
+                <span>{{ formatTime(group.startTime) }} - {{ formatTime(group.endTime) }}</span>
+              </div>
+              
+              <div class="detail-row">
+                <mat-icon>people</mat-icon>
+                <span *ngIf="!loadingGroupCapacity[group.groupId!]">
+                  <strong>Members:</strong> 
+                  <span class="capacity-indicator">
+                    {{ groupMemberCounts[group.groupId!] || 0 }} / {{ group.maxLimit }}
+                  </span>
+                </span>
+                <mat-spinner *ngIf="loadingGroupCapacity[group.groupId!]" diameter="20"></mat-spinner>
+              </div>
+              
+              <div class="detail-row">
+                <mat-icon>description</mat-icon>
+                <span>{{ group.description || 'No description' }}</span>
+              </div>
+
+              <div class="detail-row" *ngIf="groupMemberCounts[group.groupId!] > 0">
+                <button 
+                  mat-stroked-button 
+                  color="primary" 
+                  (click)="toggleGroupMembers(group.groupId!)"
+                  class="show-members-btn">
+                  <mat-icon>{{ showingGroupMembers[group.groupId!] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  {{ showingGroupMembers[group.groupId!] ? 'Hide' : 'View' }} Members 
+                  ({{ groupMemberCounts[group.groupId!] }})
+                </button>
+              </div>
+
+              <div *ngIf="showingGroupMembers[group.groupId!]" class="members-list">
+                <div *ngIf="loadingGroupMembers[group.groupId!]" class="loading-members">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+                
+                <ng-container *ngIf="!loadingGroupMembers[group.groupId!] && groupMembers[group.groupId!] && isArray(groupMembers[group.groupId!]) && groupMembers[group.groupId!].length > 0">
+                  <div class="members-header">
+                    <mat-icon>people</mat-icon>
+                    <span>Current Members</span>
+                  </div>
+                  <div *ngFor="let member of groupMembers[group.groupId!]; let i = index" class="member-item">
+                    <span class="member-number">{{ i + 1 }}</span>
+                    <mat-icon>person</mat-icon>
+                    <span class="member-name">{{ member.memberFirstName }} {{ member.memberLastName }}</span>
+                  </div>
+                </ng-container>
+                
+                <div *ngIf="!loadingGroupMembers[group.groupId!] && (!groupMembers[group.groupId!] || groupMembers[group.groupId!].length === 0)" class="no-members">
+                  <mat-icon>info</mat-icon>
+                  <span>No members yet</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button 
+              mat-stroked-button 
+              color="warn"
+              (click)="leaveGroup(group.groupId!)">
+              <mat-icon>exit_to_app</mat-icon>
+              Leave Group
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" *ngIf="selectedInstructor">
+    <div class="section-header">
+      <div class="section-title">
+        <mat-icon>group_add</mat-icon>
+        <h2>Available Groups</h2>
+      </div>
+      <p class="section-subtitle">
+        Join groups for <strong>{{ getInstructorFullName(selectedInstructor) }}</strong>
+      </p>
+    </div>
+
+    <div class="section-content">
+      <div class="info-banner">
+        <mat-icon>info</mat-icon>
+        <div class="info-text">
+          <strong>How Group Slots Work:</strong>
+          <p>Browse available groups below and click "Join Group" to become a member. Once you've joined a group, you can view other members and later book appointments for the entire group from the Scheduler page.</p>
+        </div>
+      </div>
+
+      <div *ngIf="loadingGroups" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading groups...</p>
+      </div>
+
+      <div *ngIf="!loadingGroups && availableGroups.length === 0" class="no-data-container">
+        <mat-icon>event_busy</mat-icon>
+        <p>No group slots available for this instructor.</p>
+      </div>
+
+      <div *ngIf="!loadingGroups && availableGroups.length > 0" class="cards-grid">
+        <mat-card 
+          *ngFor="let group of availableGroups"
+          class="group-card" 
+          [class.full-card]="isGroupFull(group.groupId!)"
+          [class.member-card]="isUserMember(group.groupId!)"
+          appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>group</mat-icon>
+              {{ group.groupName || 'Group Appointment' }}
+            </mat-card-title>
+            <mat-card-subtitle>
+              Group ID: {{ group.groupId }}
+              <span *ngIf="isUserMember(group.groupId!)" class="member-badge">
+                <mat-icon>check_circle</mat-icon> Already Joined
+              </span>
+            </mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="group-details">
+              <div class="detail-row">
+                <mat-icon>schedule</mat-icon>
+                <span>{{ formatTime(group.startTime) }} - {{ formatTime(group.endTime) }}</span>
+              </div>
+              
+              <div class="detail-row">
+                <mat-icon>people</mat-icon>
+                <span *ngIf="!loadingGroupCapacity[group.groupId!]">
+                  <strong>Capacity:</strong> 
+                  <span class="capacity-indicator" [class.full]="isGroupFull(group.groupId!)">
+                    {{ groupMemberCounts[group.groupId!] || 0 }} / {{ group.maxLimit }}
+                  </span>
+                  <span class="capacity-badge" [class.full]="isGroupFull(group.groupId!)">
+                    {{ isGroupFull(group.groupId!) ? 'FULL' : 'AVAILABLE' }}
+                  </span>
+                </span>
+                <mat-spinner *ngIf="loadingGroupCapacity[group.groupId!]" diameter="20"></mat-spinner>
+              </div>
+              
+              <div class="detail-row">
+                <mat-icon>description</mat-icon>
+                <span>{{ group.description || 'No description' }}</span>
+              </div>
+
+              <div class="detail-row" *ngIf="groupMemberCounts[group.groupId!] > 0">
+                <button 
+                  mat-stroked-button 
+                  color="accent" 
+                  (click)="toggleGroupMembers(group.groupId!)"
+                  class="show-members-btn">
+                  <mat-icon>{{ showingGroupMembers[group.groupId!] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  {{ showingGroupMembers[group.groupId!] ? 'Hide' : 'View' }} Members 
+                  ({{ groupMemberCounts[group.groupId!] }})
+                </button>
+              </div>
+
+              <div *ngIf="showingGroupMembers[group.groupId!]" class="members-list">
+                <div *ngIf="loadingGroupMembers[group.groupId!]" class="loading-members">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+                
+                <ng-container *ngIf="!loadingGroupMembers[group.groupId!] && groupMembers[group.groupId!] && isArray(groupMembers[group.groupId!]) && groupMembers[group.groupId!].length > 0">
+                  <div class="members-header">
+                    <mat-icon>people</mat-icon>
+                    <span>Current Members</span>
+                  </div>
+                  <div *ngFor="let member of groupMembers[group.groupId!]; let i = index" class="member-item">
+                    <span class="member-number">{{ i + 1 }}</span>
+                    <mat-icon>person</mat-icon>
+                    <span class="member-name">{{ member.memberFirstName }} {{ member.memberLastName }}</span>
+                  </div>
+                </ng-container>
+                
+                <div *ngIf="!loadingGroupMembers[group.groupId!] && (!groupMembers[group.groupId!] || groupMembers[group.groupId!].length === 0)" class="no-members">
+                  <mat-icon>info</mat-icon>
+                  <span>No members yet. Be the first to join!</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button 
+              mat-raised-button 
+              color="primary"
+              *ngIf="!isUserMember(group.groupId!) && !isGroupFull(group.groupId!)"
+              [disabled]="loadingMembership[group.groupId!]"
+              (click)="joinGroup(group.groupId!)">
+              <mat-icon>group_add</mat-icon>
+              Join Group
+            </button>
+            
+            <button 
+              mat-stroked-button 
+              color="warn"
+              *ngIf="isUserMember(group.groupId!)"
+              (click)="leaveGroup(group.groupId!)">
+              <mat-icon>exit_to_app</mat-icon>
+              Leave Group
+            </button>
+
+            <button 
+              mat-raised-button 
+              color="warn"
+              *ngIf="!isUserMember(group.groupId!) && isGroupFull(group.groupId!)"
+              disabled>
+              <mat-icon>block</mat-icon>
+              Group Full
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,13 +1,15 @@
-// group-appointment.model.ts
 export interface GroupAppointment {
   groupId?: number;
-  groupName?: string;
   instructorId?: number;
+  groupName?: string;
+  startTime?: string;
+  endTime?: string;
   maxLimit?: number;
-  startTime?: string;  
-  endTime?: string;    
   description?: string;
-  createdAt?: string; 
-  updatedAt?: string; 
-  status?: string; 
+  status?: string;
+  createdAt?: string;
+  isBooked?: boolean;
+  bookedAppointmentId?: number;
+  bookedByUserId?: number;
+  bookedAt?: string;
 }

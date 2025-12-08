@@ -4,6 +4,7 @@ import { Login } from './login/login';
 import { Register } from './register/register';
 import { AuthGuard } from './service/auth.guard';
 import { InstructorSchedulerComponent } from './instructor-scheduler-component/instructor-scheduler-component';
+import { GroupManagementComponent } from './group-management.component/group-management.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -12,6 +13,11 @@ export const routes: Routes = [
   { 
     path: 'student-scheduler', 
     component: Scheduler,
+    canActivate: [AuthGuard]
+  },
+    { 
+    path: 'group-management', 
+    component: GroupManagementComponent,
     canActivate: [AuthGuard]
   },
   { 
