@@ -1,0 +1,53 @@
+.admin-content {
+  padding: 16px;
+
+  mat-expansion-panel {
+    margin-bottom: 16px;
+  }
+
+  // Override mat-list-item for overlap issue
+  mat-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 0;
+    min-height: unset; 
+    height: auto;
+    line-height: 1.4;
+
+    .left {
+      text-align: left;
+      flex: 1;
+    }
+
+    .name {
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .meta {
+      font-size: 0.85rem;
+      color: #666;
+      word-break: break-word;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.empty {
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.manage-card {
+  margin-top: 24px;
+}
+
+.full-width {
+  width: 100%;
+}
