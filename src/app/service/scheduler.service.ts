@@ -35,11 +35,17 @@ export class SchedulerService {
   bookGroupForAll(
     studentId: number,
     groupId: number,
-    description: string
+    description: string,
+    groupAppointmentId?: number
   ): Observable<SchedulerAppointment> {
+    const requestBody = { studentId, description, groupAppointmentId ,groupId};
+    console.log('Sending bookGroupForAll request:', {
+      url: `${this.baseUrl}/group/${groupId}/book`,
+      body: requestBody
+    });
     return this.http.post<SchedulerAppointment>(
       `${this.baseUrl}/group/${groupId}/book`,
-      { studentId, description }
+      requestBody
     );
   }
 

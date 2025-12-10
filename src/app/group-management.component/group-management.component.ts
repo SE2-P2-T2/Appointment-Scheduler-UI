@@ -6,9 +6,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
-import { GroupAppointment } from '../models/group-appointment';
+import { Groups } from '../models/Groups';
 import { GroupMember } from '../models/GroupMember';
 import { User, UserRole } from '../models/User';
+import { GroupsService } from '../service/groups.service';
 import { GroupAppointmentService } from '../service/group-appointment.service';
 import { SchedulerService } from '../service/scheduler.service';
 import { UserService } from '../service/user.service';
@@ -31,7 +32,6 @@ import { Router } from '@angular/router';
 })
 export class GroupManagementComponent implements OnInit {
   
-  // Current student
   currentStudentId: number = 3;
   currentStudent: User | null = null;
 
@@ -40,26 +40,25 @@ export class GroupManagementComponent implements OnInit {
   instructors: User[] = [];
   loadingInstructors = false;
 
-  // Available groups (not yet booked)
-  availableGroups: GroupAppointment[] = [];
+
+  availableGroups: Groups[] = [];
   loadingGroups = false;
 
-  // Groups user has joined
-  myGroups: GroupAppointment[] = [];
+
+  myGroups: Groups[] = [];
   loadingMyGroups = false;
 
-  // Group data
   groupMemberCounts: { [key: number]: number } = {};
   loadingGroupCapacity: { [key: number]: boolean } = {};
   userGroupMemberships: { [key: number]: boolean } = {}; // Which groups user has joined
   loadingMembership: { [key: number]: boolean } = {};
 
-  // Group members display
   showingGroupMembers: { [key: number]: boolean } = {};
   groupMembers: { [key: number]: GroupMember[] } = {};
   loadingGroupMembers: { [key: number]: boolean } = {};
 
   constructor(
+    private groupsService: GroupsService,
     private groupAppointmentService: GroupAppointmentService,
     private schedulerService: SchedulerService,
     private userService: UserService,
@@ -80,7 +79,7 @@ export class GroupManagementComponent implements OnInit {
   }
 
     goBackToScheduler(): void {
-    this.router.navigate(['/scheduler']);
+    this.router.navigate(['/student-scheduler']);
   }
   
   loadInstructors(): void {
@@ -112,26 +111,23 @@ export class GroupManagementComponent implements OnInit {
   
   loadAvailableGroups(instructorId: number): void {
     console.log('Loading available groups for instructor:', instructorId);
-    
+
     this.loadingGroups = true;
-    
-    this.groupAppointmentService.getAllGroups().subscribe({
-      next: (data) => {
-        // Filter: only unbooked groups for this instructor
+
+    this.groupsService.getAllGroups().subscribe({
+      next: (data: Groups[]) => {
         this.availableGroups = data.filter(
-          group => group.instructorId === instructorId && !group.isBooked
+          (group: Groups) => group.instructorId === instructorId
         );
-        
+
         this.loadingGroups = false;
         console.log('Available groups:', this.availableGroups);
-        
-        // Load group data
+
         this.loadAllGroupData();
-        
-        // Load groups user has joined
+
         this.loadMyGroups();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading groups:', error);
         this.loadingGroups = false;
         this.snackBar.open('Failed to load groups', 'Close', { duration: 3000 });
@@ -141,15 +137,14 @@ export class GroupManagementComponent implements OnInit {
   
   loadMyGroups(): void {
     this.loadingMyGroups = true;
-    
-    // Get all groups where user is a member
-    const membershipChecks = this.availableGroups.map(group => 
-      new Promise<GroupAppointment | null>((resolve) => {
+
+    const membershipChecks = this.availableGroups.map(group =>
+      new Promise<Groups | null>((resolve) => {
         if (!group.groupId) {
           resolve(null);
           return;
         }
-        
+
         this.schedulerService.isUserMemberOfGroup(this.currentStudentId, group.groupId).subscribe({
           next: (isMember) => {
             if (isMember) {
@@ -164,7 +159,7 @@ export class GroupManagementComponent implements OnInit {
     );
 
     Promise.all(membershipChecks).then(results => {
-      this.myGroups = results.filter((g): g is GroupAppointment => g !== null);
+      this.myGroups = results.filter((g): g is Groups => g !== null);
       this.loadingMyGroups = false;
       console.log('My groups:', this.myGroups);
     });
@@ -294,10 +289,10 @@ export class GroupManagementComponent implements OnInit {
 
   isGroupFull(groupId: number): boolean {
     const group = this.availableGroups.find(g => g.groupId === groupId);
-    if (!group || !group.maxLimit) return false;
-    
+    if (!group || !group.maxMembers) return false;
+
     const currentCount = this.groupMemberCounts[groupId] || 0;
-    return currentCount >= group.maxLimit;
+    return currentCount >= group.maxMembers;
   }
 
   isUserMember(groupId: number): boolean {

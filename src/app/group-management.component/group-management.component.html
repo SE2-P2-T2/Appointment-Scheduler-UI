@@ -102,24 +102,14 @@
           <mat-card-content>
             <div class="group-details">
               <div class="detail-row">
-                <mat-icon>schedule</mat-icon>
-                <span>{{ formatTime(group.startTime) }} - {{ formatTime(group.endTime) }}</span>
-              </div>
-              
-              <div class="detail-row">
                 <mat-icon>people</mat-icon>
                 <span *ngIf="!loadingGroupCapacity[group.groupId!]">
-                  <strong>Members:</strong> 
+                  <strong>Members:</strong>
                   <span class="capacity-indicator">
-                    {{ groupMemberCounts[group.groupId!] || 0 }} / {{ group.maxLimit }}
+                    {{ groupMemberCounts[group.groupId!] || 0 }} / {{ group.maxMembers || 'Unlimited' }}
                   </span>
                 </span>
                 <mat-spinner *ngIf="loadingGroupCapacity[group.groupId!]" diameter="20"></mat-spinner>
-              </div>
-              
-              <div class="detail-row">
-                <mat-icon>description</mat-icon>
-                <span>{{ group.description || 'No description' }}</span>
               </div>
 
               <div class="detail-row" *ngIf="groupMemberCounts[group.groupId!] > 0">
@@ -226,27 +216,17 @@
           <mat-card-content>
             <div class="group-details">
               <div class="detail-row">
-                <mat-icon>schedule</mat-icon>
-                <span>{{ formatTime(group.startTime) }} - {{ formatTime(group.endTime) }}</span>
-              </div>
-              
-              <div class="detail-row">
                 <mat-icon>people</mat-icon>
                 <span *ngIf="!loadingGroupCapacity[group.groupId!]">
-                  <strong>Capacity:</strong> 
+                  <strong>Capacity:</strong>
                   <span class="capacity-indicator" [class.full]="isGroupFull(group.groupId!)">
-                    {{ groupMemberCounts[group.groupId!] || 0 }} / {{ group.maxLimit }}
+                    {{ groupMemberCounts[group.groupId!] || 0 }} / {{ group.maxMembers || 'Unlimited' }}
                   </span>
                   <span class="capacity-badge" [class.full]="isGroupFull(group.groupId!)">
                     {{ isGroupFull(group.groupId!) ? 'FULL' : 'AVAILABLE' }}
                   </span>
                 </span>
                 <mat-spinner *ngIf="loadingGroupCapacity[group.groupId!]" diameter="20"></mat-spinner>
-              </div>
-              
-              <div class="detail-row">
-                <mat-icon>description</mat-icon>
-                <span>{{ group.description || 'No description' }}</span>
               </div>
 
               <div class="detail-row" *ngIf="groupMemberCounts[group.groupId!] > 0">

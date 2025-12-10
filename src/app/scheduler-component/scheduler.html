@@ -4,14 +4,24 @@
       <mat-icon>event</mat-icon>
       Appointment Scheduler
     </h1>
-    <button 
-      mat-raised-button 
-      color="accent"
-      (click)="goToGroupManagement()"
-      class="nav-button">
-      <mat-icon>groups</mat-icon>
-      Join Group Slots
-    </button>
+    <div class="nav-buttons">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openProfessorSelectionDialog()"
+        class="nav-button">
+        <mat-icon>person_add</mat-icon>
+        Add a New Professor
+      </button>
+      <button
+        mat-raised-button
+        color="accent"
+        (click)="goToGroupManagement()"
+        class="nav-button">
+        <mat-icon>groups</mat-icon>
+        Join Group Slots
+      </button>
+    </div>
   </div>
 
   <div class="section">
@@ -42,14 +52,7 @@
             <mat-card-title>{{ getInstructorFullName(instructor) }}</mat-card-title>
             <mat-card-subtitle>{{ instructor.email }}</mat-card-subtitle>
           </mat-card-header>
-          
-          <mat-card-content>
-            <p class="instructor-username">
-              <mat-icon>alternate_email</mat-icon>
-              <span>{{ instructor.username || 'N/A' }}</span>
-            </p>
-          </mat-card-content>
-          
+
           <mat-card-actions>
             <button 
               mat-raised-button 
@@ -193,30 +196,33 @@
             <mat-card-content>
               <div class="appointment-details">
                 <div class="detail-row">
-                  <mat-icon>schedule</mat-icon>
-                  <span>{{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}</span>
+                  <mat-icon>event</mat-icon>
+                  <span><strong>Date:</strong> {{ formatDate(appointment.appointmentDate) || 'N/A' }}</span>
                 </div>
-                
+                <div class="detail-row">
+                  <mat-icon>schedule</mat-icon>
+                  <span><strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}</span>
+                </div>
+                <div class="detail-row" *ngIf="appointment.description">
+                  <mat-icon>description</mat-icon>
+                  <span>{{ appointment.description }}</span>
+                </div>
+                <mat-divider></mat-divider>
                 <div class="detail-row capacity-row">
                   <mat-icon>people</mat-icon>
                   <span *ngIf="!loadingGroupCapacity[appointment.groupId!]">
-                    <strong>Members:</strong> 
+                    <strong>Members:</strong>
                     <span class="capacity-indicator" [class.full]="isGroupFull(appointment.groupId!)">
-                      {{ groupMemberCounts[appointment.groupId!] || 0 }} / {{ appointment.maxLimit }}
+                      {{ groupMemberCounts[appointment.groupId!] || 0 }} / {{ appointment.maxMembers || 'Unlimited' }}
                     </span>
-                    <span class="capacity-badge" 
+                    <span class="capacity-badge"
                           [class.full]="isGroupFull(appointment.groupId!)"
                           [class.ready]="hasMinimumMembers(appointment.groupId!) && !isGroupFull(appointment.groupId!)">
-                      {{ isGroupFull(appointment.groupId!) ? 'FULL' : 
+                      {{ isGroupFull(appointment.groupId!) ? 'FULL' :
                          hasMinimumMembers(appointment.groupId!) ? 'READY TO BOOK' : 'NEED MORE MEMBERS' }}
                     </span>
                   </span>
                   <mat-spinner *ngIf="loadingGroupCapacity[appointment.groupId!]" diameter="20"></mat-spinner>
-                </div>
-                
-                <div class="detail-row">
-                  <mat-icon>description</mat-icon>
-                  <span>{{ appointment.description || 'No description' }}</span>
                 </div>
 
                 <div class="detail-row" *ngIf="groupMemberCounts[appointment.groupId!] > 0">
@@ -262,7 +268,7 @@
                 mat-raised-button 
                 [color]="hasMinimumMembers(appointment.groupId!) ? 'accent' : 'primary'"
                 [disabled]="!hasMinimumMembers(appointment.groupId!)"
-                (click)="bookGroupForAll(appointment.groupId!, appointment.description || '')">
+                (click)="bookGroupForAll(appointment.groupId!, appointment.groupName || '')">
                 <mat-icon>{{ hasMinimumMembers(appointment.groupId!) ? 'event_available' : 'schedule' }}</mat-icon>
                 {{ hasMinimumMembers(appointment.groupId!) ? 'Book for All Members' : 'Need 2+ Members to Book' }}
               </button>

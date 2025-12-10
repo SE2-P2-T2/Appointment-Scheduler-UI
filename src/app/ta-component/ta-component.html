@@ -6,7 +6,11 @@
     </h1>
     <div class="professor-info">
       <mat-icon>school</mat-icon>
-      <span>Viewing appointments for: <strong>{{ getProfessorName() }}</strong></span>
+      <span *ngIf="!loadingAssignedProfessor">Viewing appointments for: <strong>{{ getProfessorName() }}</strong></span>
+      <span *ngIf="loadingAssignedProfessor">
+        <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+        Loading assigned instructor...
+      </span>
     </div>
   </div>
 
@@ -64,16 +68,8 @@
               <mat-card-content>
                 <div class="appointment-details">
                   <div class="detail-row">
-                    <mat-icon>schedule</mat-icon>
-                    <span>{{ formatTime(booking.groupDetails?.startTime) }} - {{ formatTime(booking.groupDetails?.endTime) }}</span>
-                  </div>
-                  <div class="detail-row">
                     <mat-icon>people</mat-icon>
-                    <span><strong>Max Participants:</strong> {{ booking.groupDetails?.maxLimit || 'N/A' }}</span>
-                  </div>
-                  <div class="detail-row">
-                    <mat-icon>description</mat-icon>
-                    <span>{{ booking.groupDetails?.description || 'No description' }}</span>
+                    <span><strong>Max Participants:</strong> {{ booking.groupDetails?.maxMembers || 'Unlimited' }}</span>
                   </div>
                   <div class="detail-row">
                     <mat-icon>email</mat-icon>

@@ -1,17 +1,18 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { GroupAppointment } from '../models/group-appointment';
 import { GroupMember } from '../models/GroupMember';
 
 @Injectable({
-  providedIn: 'root' 
+  providedIn: 'root'
 })
 export class GroupAppointmentService {
 
-  private baseUrl = `${environment.groupApiUrl}/groups`;
-  private baseGroupMemberUrl = `${environment.groupApiUrl}/groupmembers`;
+  private baseUrl = `${environment.groupApiUrl}/groupappointments`;
+  private schedulerBaseUrl = `${environment.schedulerServiceUrl}/api/scheduler`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -36,13 +37,24 @@ export class GroupAppointmentService {
   }
 
   getGroupMembers(groupId: number): Observable<GroupMember[]> {
-    return this.httpClient.get<GroupMember[]>(`${this.baseGroupMemberUrl}/group/${groupId}`);
+    return this.httpClient.get<GroupMember[]>(`${this.schedulerBaseUrl}/group/${groupId}/members`);
   }
 
   getGroupMemberCount(groupId: number): Observable<number> {
-    return this.httpClient.get<number>(`${this.baseGroupMemberUrl}/group/${groupId}/count`);
+    return this.getGroupMembers(groupId).pipe(
+      map((members: GroupMember[]) => members.length)
+    );
   }
+
   canBookGroup(groupId: number): Observable<boolean> {
     return this.httpClient.get<boolean>(`${this.baseUrl}/${groupId}/can-book`);
+  }
+
+  getAppointmentsByInstructor(instructorId: number): Observable<GroupAppointment[]> {
+    return this.httpClient.get<GroupAppointment[]>(`${this.baseUrl}/by-instructor/${instructorId}`);
+  }
+
+  deleteGroupAppointment(appointmentId: number): Observable<void> {
+    return this.httpClient.delete<void>(`${this.baseUrl}/${appointmentId}`);
   }
 }

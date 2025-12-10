@@ -1,15 +1,10 @@
 export interface GroupAppointment {
-  groupId?: number;
+  groupAppointmentId?: number;
   instructorId?: number;
-  groupName?: string;
+  appointmentDate?: string;
   startTime?: string;
   endTime?: string;
-  maxLimit?: number;
   description?: string;
-  status?: string;
   createdAt?: string;
-  isBooked?: boolean;
-  bookedAppointmentId?: number;
-  bookedByUserId?: number;
-  bookedAt?: string;
+  updatedAt?: string;
 }

@@ -8,7 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { forkJoin } from 'rxjs';
 
 import { GroupAppointment } from '../models/group-appointment';
+import { Groups } from '../models/Groups';
 import { GroupAppointmentService } from '../service/group-appointment.service';
+import { GroupsService } from '../service/groups.service';
 import { IndividualAppointment } from '../models/Individual-appointment';
 import { IndividualAppointmentService } from '../service/individual-appointment.service';
 import { SchedulerService } from '../service/scheduler.service';
@@ -24,7 +26,7 @@ interface BookedIndividualAppointment extends SchedulerAppointment {
 }
 
 interface BookedGroupAppointment extends SchedulerAppointment {
-  groupDetails?: GroupAppointment;
+  groupDetails?: Groups;
   studentDetails?: User;
 }
 
@@ -42,10 +44,11 @@ interface BookedGroupAppointment extends SchedulerAppointment {
   styleUrl: './ta-component.scss',
 })
 export class TaComponent implements OnInit {
-  // Current TA's assigned professor ID (this should come from TA's signup data)
-  assignedProfessorId: number = 1; // This will be set based on TA's selected professor during signup
+  // Current TA's assigned professor ID - fetched from ta_instructors table
+  assignedProfessorId: number | null = null;
   currentTaId: number = 1;
   assignedProfessor: User | null = null;
+  loadingAssignedProfessor = true;
 
   bookedGroupAppointments: BookedGroupAppointment[] = [];
   bookedIndividualAppointments: BookedIndividualAppointment[] = [];
@@ -59,6 +62,7 @@ export class TaComponent implements OnInit {
 
   constructor(
     private groupAppointmentService: GroupAppointmentService,
+    private groupsService: GroupsService,
     private individualAppointmentService: IndividualAppointmentService,
     private schedulerService: SchedulerService,
     private userService: UserService,
@@ -69,23 +73,29 @@ export class TaComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
       this.currentTaId = currentUser.userId;
-      // In a real implementation, fetch the TA's assigned professor ID from their profile/signup data
-      // For now, we'll use a default value
-      // this.assignedProfessorId = currentUser.assignedProfessorId;
+      console.log('Current TA:', currentUser);
     }
 
+    // First load the assigned professor, then load appointments
     this.loadAssignedProfessor();
-    this.loadBookedAppointments();
   }
 
   loadAssignedProfessor(): void {
-    this.userService.getUserById(this.assignedProfessorId).subscribe({
+    this.loadingAssignedProfessor = true;
+
+    this.userService.getTAAssignedInstructor(this.currentTaId).subscribe({
       next: (professor) => {
         this.assignedProfessor = professor;
+        this.assignedProfessorId = professor.userId;
+        this.loadingAssignedProfessor = false;
         console.log('Assigned professor:', professor);
+
+        this.loadBookedAppointments();
       },
       error: (error) => {
         console.error('Error loading assigned professor:', error);
+        this.loadingAssignedProfessor = false;
+        this.bookedError = 'Failed to load assigned instructor. Please contact administrator.';
       }
     });
   }
@@ -98,7 +108,7 @@ export class TaComponent implements OnInit {
       individualBookings: this.schedulerService.getIndividualBookings(),
       groupBookings: this.schedulerService.getGroupBookings(),
       individualAppointments: this.individualAppointmentService.getAllIndividualAppointments(),
-      groupAppointments: this.groupAppointmentService.getAllGroups()
+      groupAppointments: this.groupsService.getAllGroups()
     }).subscribe({
       next: (data) => {
         this.processIndividualBookings(
@@ -133,7 +143,6 @@ export class TaComponent implements OnInit {
           a => a.appointmentId === booking.appointmentId
         );
 
-        // Only show bookings for the assigned professor
         if (appointment && appointment.instructorId === this.assignedProfessorId) {
           this.userService.getUserById(booking.studentId).subscribe({
             next: (student) => {
@@ -155,7 +164,7 @@ export class TaComponent implements OnInit {
 
   processGroupBookings(
     bookings: SchedulerAppointment[],
-    allGroups: GroupAppointment[]
+    allGroups: Groups[]
   ): void {
     const enrichedBookings: BookedGroupAppointment[] = [];
     const groupedByGroupId = new Map<number, SchedulerAppointment[]>();
@@ -183,7 +192,6 @@ export class TaComponent implements OnInit {
 
       const group = allGroups.find(g => g.groupId === groupId);
 
-      // Only show bookings for the assigned professor
       if (group && group.instructorId === this.assignedProfessorId) {
         this.userService.getUserById(firstBooking.studentId).subscribe({
           next: (student) => {

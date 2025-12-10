@@ -766,6 +766,11 @@
     }
   }
 
+  .nav-buttons {
+    display: flex;
+    gap: 12px;
+  }
+
   .nav-button {
     padding: 0 24px;
     height: 44px;
@@ -783,6 +788,11 @@
     flex-direction: column;
     gap: 16px;
     padding: 16px;
+
+    .nav-buttons {
+      flex-direction: column;
+      width: 100%;
+    }
 
     .nav-button {
       width: 100%;

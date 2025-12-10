@@ -83,6 +83,23 @@
           </mat-error>
         </mat-form-field>
 
+        <mat-form-field appearance="outline" class="full-width" *ngIf="showInstructorSelection">
+          <mat-label>Select Your Instructor</mat-label>
+          <mat-select formControlName="instructorId" placeholder="Choose an instructor">
+            <mat-option *ngIf="loadingProfessors" disabled>
+              <mat-spinner diameter="20"></mat-spinner> Loading professors...
+            </mat-option>
+            <mat-option *ngFor="let professor of professors" [value]="professor.userId">
+              {{ professor.firstName }} {{ professor.lastName }} ({{ professor.email }})
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>school</mat-icon>
+          <mat-error *ngIf="registerForm.get('instructorId')?.hasError('required')">
+            Please select an instructor
+          </mat-error>
+          <mat-hint>Your request will be sent to admin for approval</mat-hint>
+        </mat-form-field>
+
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Password</mat-label>
           <input 
