@@ -388,9 +388,6 @@ loadAvailableAppointments(instructorId: number): void {
       return;
     }
 
-    console.log('🔍 Starting bookGroupForAll for groupId:', groupId);
-    console.log('📝 Group name:', groupName);
-
     const groupAppointmentId = this.groupToAppointmentMap[groupId];
 
     if (!groupAppointmentId) {
@@ -398,26 +395,15 @@ loadAvailableAppointments(instructorId: number): void {
       return;
     }
 
-    console.log('✅ Using groupAppointmentId from mapping:', groupAppointmentId);
+
 
     const description = groupName || 'Group Appointment';
 
-    console.log('🚀 Calling bookGroupForAll with groupAppointmentId:', groupAppointmentId);
     this.schedulerService.bookGroupForAll(this.currentStudentId, groupId, description, groupAppointmentId).subscribe({
       next: (booking) => {
         this.snackBar.open('Group appointment booked successfully for all members!', 'Close', {
           duration: 3000,
           panelClass: ['success-snackbar']
-        });
-
-        console.log('🗑️ Deleting group appointment:', groupAppointmentId);
-        this.groupAppointmentService.deleteGroupAppointment(groupAppointmentId).subscribe({
-          next: () => {
-            console.log('Group appointment successfully deleted from available slots');
-          },
-          error: (error) => {
-            console.error('Error deleting group appointment:', error);
-          }
         });
 
         this.loadMyBookings();

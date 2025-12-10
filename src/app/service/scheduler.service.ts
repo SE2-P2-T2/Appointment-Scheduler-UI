@@ -38,7 +38,7 @@ export class SchedulerService {
     description: string,
     groupAppointmentId?: number
   ): Observable<SchedulerAppointment> {
-    const requestBody = { studentId, description, groupAppointmentId };
+    const requestBody = { studentId, description, groupAppointmentId ,groupId};
     console.log('Sending bookGroupForAll request:', {
       url: `${this.baseUrl}/group/${groupId}/book`,
       body: requestBody
