@@ -34,17 +34,19 @@ export class AuthService {
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
-    
-
     if (this.isBrowser) {
       const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {
         try {
-          this.currentUserSubject.next(JSON.parse(storedUser));
+          const user = JSON.parse(storedUser);
+          this.currentUserSubject.next(user);
+          console.log('User loaded from localStorage:', user.email);
         } catch (e) {
           console.error('Error parsing stored user:', e);
           localStorage.removeItem('currentUser');
         }
+      } else {
+        console.log('No user found in localStorage');
       }
     }
   }

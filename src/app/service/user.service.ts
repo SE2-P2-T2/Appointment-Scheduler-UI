@@ -36,4 +36,20 @@ export class UserService {
   getInstructors(): Observable<User[]> {
     return this.http.get<User[]>(`${this.baseUrl}/getusers`);
   }
+
+  getProfessors(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/getProfessors`);
+  }
+
+  getTAAssignedInstructor(taId: number): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/ta/${taId}/assigned-instructor`);
+  }
+
+  createStudentInstructorMapping(studentId: number, instructorId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/student-instructor-mapping`, {
+      studentId,
+      instructorId,
+      status: 'pending'
+    });
+  }
 }

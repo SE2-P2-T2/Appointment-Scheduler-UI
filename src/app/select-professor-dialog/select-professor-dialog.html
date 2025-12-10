@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Add a New Professor</h2>
+
+<mat-dialog-content>
+  <div *ngIf="loading()" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading professors...</p>
+  </div>
+
+  <div *ngIf="error()" class="error-container">
+    <p class="error-message">{{ error() }}</p>
+    <button mat-raised-button color="primary" (click)="loadProfessors()">
+      Retry
+    </button>
+  </div>
+
+  <form class="professor-form" *ngIf="!loading() && !error()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Select a Professor</mat-label>
+      <mat-select [ngModel]="selectedProfessor()" (ngModelChange)="selectedProfessor.set($event)" name="professor" required>
+        <mat-option *ngFor="let prof of professors()" [value]="prof">
+          {{ prof.firstName }} {{ prof.lastName }} ({{ prof.email }})
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <p class="helper-text" *ngIf="professors().length === 0">
+      All professors are already mapped to this student or no professors are available.
+    </p>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="!isFormValid()"
+  >
+    Request for Admin Approval
+  </button>
+</mat-dialog-actions>

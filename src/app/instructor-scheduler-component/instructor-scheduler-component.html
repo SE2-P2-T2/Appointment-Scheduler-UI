@@ -16,57 +16,55 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           <mat-icon>groups</mat-icon>
-          Group Appointments
+          Group Slots
         </mat-panel-title>
         <mat-panel-description>
-          {{ groupAppointments.length }} slots available
+          {{ groupSlots.length }} slots available
         </mat-panel-description>
       </mat-expansion-panel-header>
 
-      <div *ngIf="groupLoading" class="loading-container">
+      <div *ngIf="groupSlotsLoading" class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
-        <p>Loading group appointments...</p>
+        <p>Loading group slots...</p>
       </div>
 
-      <div *ngIf="groupError" class="error-container">
-        <p class="error-message">{{ groupError }}</p>
-        <button mat-raised-button color="primary" (click)="loadGroupAppointments()">
+      <div *ngIf="groupSlotsError" class="error-container">
+        <p class="error-message">{{ groupSlotsError }}</p>
+        <button mat-raised-button color="primary" (click)="loadGroupSlots()">
           Retry
         </button>
       </div>
 
-      <div *ngIf="!groupLoading && !groupError && groupAppointments.length === 0" class="no-data-container">
+      <div *ngIf="!groupSlotsLoading && !groupSlotsError && groupSlots.length === 0" class="no-data-container">
         <mat-icon>inbox</mat-icon>
-        <p>No group appointment slots created yet.</p>
+        <p>No group slots created yet. Create a group slot for students to join.</p>
       </div>
 
-      <div *ngIf="!groupLoading && !groupError && groupAppointments.length > 0" class="instructors-row">
-        <mat-card 
-          *ngFor="let appointment of groupAppointments" 
-          class="example-card available-card" 
+      <div *ngIf="!groupSlotsLoading && !groupSlotsError && groupSlots.length > 0" class="instructors-row">
+        <mat-card
+          *ngFor="let slot of groupSlots"
+          class="example-card available-card"
           appearance="outlined">
           <mat-card-header>
             <mat-card-title>
               <mat-icon>group</mat-icon>
-              {{ appointment.groupName || 'Group Appointment' }}
+              {{ slot.groupName || 'Group Slot' }}
             </mat-card-title>
             <mat-card-subtitle>
-              Group ID: {{ appointment.groupId }}
+              Group ID: {{ slot.groupId }}
             </mat-card-subtitle>
           </mat-card-header>
-          
+
           <mat-card-content>
             <p>
-              <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
-              <strong>Max Participants:</strong> {{ appointment.maxLimit || 'N/A' }}<br>
-              <strong>Description:</strong> {{ appointment.description || 'No description available' }}<br>
-              <strong>Created:</strong> {{ formatDate(appointment.createdAt) }}<br>
-              <strong>Status:</strong> <span class="status-badge available">OPEN FOR BOOKING</span>
+              <strong>Max Members:</strong> {{ slot.maxMembers || 'N/A' }}<br>
+              <strong>Created:</strong> {{ formatDate(slot.createdAt) }}<br>
+              <strong>Status:</strong> <span class="status-badge available">AVAILABLE FOR STUDENTS</span>
             </p>
           </mat-card-content>
-          
+
           <mat-card-actions>
-            <button mat-raised-button color="warn" (click)="deleteGroupAppointment(appointment.groupId)">
+            <button mat-raised-button color="warn" (click)="deleteGroupSlot(slot.groupId)">
               <mat-icon>delete</mat-icon>
               Delete Slot
             </button>
@@ -135,6 +133,69 @@
         </mat-card>
       </div>
     </mat-expansion-panel>
+
+    <mat-expansion-panel hideToggle>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>event</mat-icon>
+          Group Appointments
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ groupAppointments.length }} appointments available
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div *ngIf="groupAppointmentsLoading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading group appointments...</p>
+      </div>
+
+      <div *ngIf="groupAppointmentsError" class="error-container">
+        <p class="error-message">{{ groupAppointmentsError }}</p>
+        <button mat-raised-button color="primary" (click)="loadGroupAppointments()">
+          Retry
+        </button>
+      </div>
+
+      <div *ngIf="!groupAppointmentsLoading && !groupAppointmentsError && groupAppointments.length === 0" class="no-data-container">
+        <mat-icon>inbox</mat-icon>
+        <p>No group appointments created yet.</p>
+      </div>
+
+      <div *ngIf="!groupAppointmentsLoading && !groupAppointmentsError && groupAppointments.length > 0" class="instructors-row">
+        <mat-card
+          *ngFor="let appointment of groupAppointments"
+          class="example-card available-card"
+          appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>event</mat-icon>
+              Group Appointment - {{ formatDate(appointment.appointmentDate) }}
+            </mat-card-title>
+            <mat-card-subtitle>
+              ID: {{ appointment.groupAppointmentId }}
+            </mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p>
+              <strong>Date:</strong> {{ formatDate(appointment.appointmentDate) }}<br>
+              <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
+              <strong>Description:</strong> {{ appointment.description || 'No description' }}<br>
+              <strong>Created:</strong> {{ formatDate(appointment.createdAt) }}<br>
+              <strong>Status:</strong> <span class="status-badge available">OPEN FOR GROUP BOOKING</span>
+            </p>
+          </mat-card-content>
+
+          <mat-card-actions>
+            <button mat-raised-button color="warn" (click)="deleteGroupAppointment(appointment.groupAppointmentId)">
+              <mat-icon>delete</mat-icon>
+              Delete Appointment
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </mat-expansion-panel>
   </mat-accordion>
 </div>
 
@@ -161,16 +222,16 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           <mat-icon>groups</mat-icon>
-          Group Appointments
+          Group Slot Bookings
         </mat-panel-title>
         <mat-panel-description>
-          {{ bookedGroupAppointments.length }} booked
+          {{ bookedGroupAppointments.length }} students joined groups
         </mat-panel-description>
       </mat-expansion-panel-header>
 
       <div *ngIf="bookedGroupAppointments.length === 0" class="no-data-container">
         <mat-icon>inbox</mat-icon>
-        <p>No group appointments booked yet.</p>
+        <p>No students have joined group slots yet.</p>
       </div>
 
       <div *ngIf="bookedGroupAppointments.length > 0" class="instructors-row">
@@ -190,9 +251,7 @@
           
           <mat-card-content>
             <p>
-              <strong>Time:</strong> {{ formatTime(booking.groupDetails?.startTime) }} - {{ formatTime(booking.groupDetails?.endTime) }}<br>
-              <strong>Max Participants:</strong> {{ booking.groupDetails?.maxLimit || 'N/A' }}<br>
-              <strong>Description:</strong> {{ booking.groupDetails?.description || 'No description' }}<br>
+              <strong>Max Participants:</strong> {{ booking.groupDetails?.maxMembers || 'Unlimited' }}<br>
               <strong>Student Email:</strong> {{ getStudentEmail(booking) }}<br>
               <strong>Booked On:</strong> {{ formatDate(booking.bookedAt) }}<br>
               <strong>Status:</strong> <span class="status-badge booked">{{ booking.status.toUpperCase() }}</span>

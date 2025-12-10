@@ -1,15 +1,25 @@
-.toggle-section {
+.type-selection {
   margin-bottom: 24px;
-  padding: 16px;
+  padding: 20px;
   background-color: #f5f5f5;
   border-radius: 8px;
-  display: flex;
-  justify-content: center;
 
-  .toggle-label {
-    font-size: 16px;
-    font-weight: 500;
-    margin-left: 8px;
+  .type-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  mat-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    mat-radio-button {
+      font-size: 15px;
+    }
   }
 }
 
@@ -52,12 +62,6 @@ mat-dialog-actions {
 }
 
 // Smooth transitions for form fields
-.appointment-form {
-  ng-container {
-    animation: fadeIn 0.3s ease-in;
-  }
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;

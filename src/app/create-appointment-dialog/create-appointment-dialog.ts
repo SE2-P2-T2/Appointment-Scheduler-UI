@@ -14,18 +14,20 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { DateAdapter, MAT_DATE_LOCALE, MatNativeDateModule, NativeDateAdapter } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatRadioModule } from '@angular/material/radio';
 import { IndividualAppointment } from '../models/Individual-appointment';
+import { Groups } from '../models/Groups';
 import { GroupAppointment } from '../models/group-appointment';
 import { CommonModule } from '@angular/common';
 
 export interface CreateAppointmentDialogData {
   instructorId: number;
+  availableGroups?: Groups[];
 }
 
 export interface AppointmentDialogResult {
-  type: 'individual' | 'group';
-  data: IndividualAppointment | GroupAppointment;
+  type: 'individual' | 'groupSlot' | 'groupAppointment';
+  data: IndividualAppointment | Groups | GroupAppointment;
 }
 
 @Component({
@@ -46,33 +48,32 @@ export interface AppointmentDialogResult {
     MatDatepickerModule,
     MatNativeDateModule,
     MatSelectModule,
-    MatSlideToggleModule,
-    MatDatepickerModule
+    MatRadioModule
   ],
   providers: [
-    
+
   ],
 })
 export class CreateAppointmentDialogComponent {
   readonly dialogRef = inject(MatDialogRef<CreateAppointmentDialogComponent>);
   readonly data = inject<CreateAppointmentDialogData>(MAT_DIALOG_DATA);
 
-
-  isGroupAppointment = signal(false);
-
+  appointmentType = signal<'individual' | 'groupSlot' | 'groupAppointment'>('individual');
 
   instructorId = this.data.instructorId;
+  availableGroups = this.data.availableGroups || [];
+
   startTime = model('');
   endTime = model('');
   description = model('');
 
-
   appointmentDate = model<Date | null>(null);
   location = model('');
 
-
   groupName = model('');
   maxLimit = model<number | null>(null);
+
+  groupAppointmentDate = model<Date | null>(null);
 
   onCancel(): void {
     this.dialogRef.close();
@@ -84,18 +85,32 @@ export class CreateAppointmentDialogComponent {
       return;
     }
 
-    if (this.isGroupAppointment()) {
-      const groupAppointment: GroupAppointment = {
+    const type = this.appointmentType();
+
+    if (type === 'groupSlot') {
+      const groupSlot: Groups = {
         groupName: this.groupName(),
         instructorId: this.instructorId,
-        maxLimit: this.maxLimit() || undefined,
+        maxMembers: this.maxLimit() || undefined,
+      };
+
+      const result: AppointmentDialogResult = {
+        type: 'groupSlot',
+        data: groupSlot,
+      };
+
+      this.dialogRef.close(result);
+    } else if (type === 'groupAppointment') {
+      const groupAppointment: GroupAppointment = {
+        instructorId: this.instructorId,
+        appointmentDate: this.formatDate(this.groupAppointmentDate()!),
         startTime: this.startTime(),
         endTime: this.endTime(),
         description: this.description(),
       };
 
       const result: AppointmentDialogResult = {
-        type: 'group',
+        type: 'groupAppointment',
         data: groupAppointment,
       };
 
@@ -108,7 +123,7 @@ export class CreateAppointmentDialogComponent {
         endTime: this.endTime(),
         location: this.location(),
         description: this.description(),
-        status: 'available', 
+        status: 'available',
       };
 
       const result: AppointmentDialogResult = {
@@ -121,21 +136,28 @@ export class CreateAppointmentDialogComponent {
   }
 
   isFormValid(): boolean {
-    const commonValid = !!(
-      this.instructorId &&
-      this.startTime() &&
-      this.endTime()
-    );
+    const type = this.appointmentType();
 
-    if (this.isGroupAppointment()) {
-      return commonValid && !!this.groupName();
+    if (type === 'groupSlot') {
+      return !!(this.instructorId && this.groupName());
+    } else if (type === 'groupAppointment') {
+      return !!(
+        this.instructorId &&
+        this.groupAppointmentDate() &&
+        this.startTime() &&
+        this.endTime()
+      );
     } else {
-      return commonValid && !!this.appointmentDate();
+      return !!(
+        this.instructorId &&
+        this.appointmentDate() &&
+        this.startTime() &&
+        this.endTime()
+      );
     }
   }
 
-  onToggleChange(): void {
-
+  onTypeChange(): void {
     this.resetFields();
   }
 
@@ -143,14 +165,11 @@ export class CreateAppointmentDialogComponent {
     this.startTime.set('');
     this.endTime.set('');
     this.description.set('');
-    
-
     this.appointmentDate.set(null);
     this.location.set('');
-    
-
     this.groupName.set('');
     this.maxLimit.set(null);
+    this.groupAppointmentDate.set(null);
   }
 
   private formatDate(date: Date): string {

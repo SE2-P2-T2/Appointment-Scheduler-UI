@@ -1,8 +1,9 @@
 export interface SchedulerAppointment {
   bookingId?: number;
-  appointmentId?: number;
+  appointmentId?: number;   
+  groupAppointmentId?: number;     
   studentId: number;
-  groupId?: number;
+  groupId?: number;                
   bookingType: 'individual' | 'group';
   bookedAt?: string;
   status: string;

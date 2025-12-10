@@ -2,6 +2,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { GroupAppointment } from '../models/group-appointment';
 import { IndividualAppointment } from '../models/Individual-appointment';
@@ -21,7 +22,11 @@ export class IndividualAppointmentService {
   }
 
   getIndividualAppointmentsByInstructor(instructorId: number): Observable<IndividualAppointment[]> {
-    return this.httpClient.get<IndividualAppointment[]>(`${this.baseUrl}/individual/instructor/${instructorId}`);
+    return this.getAllIndividualAppointments().pipe(
+      map((appointments: IndividualAppointment[]) =>
+        appointments.filter(apt => apt.instructorId === instructorId)
+      )
+    );
   }
 
   createIndividualAppointment(appointment: IndividualAppointment): Observable<IndividualAppointment> {
