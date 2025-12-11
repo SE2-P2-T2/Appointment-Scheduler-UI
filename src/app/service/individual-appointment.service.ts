@@ -36,4 +36,8 @@ export class IndividualAppointmentService {
   deleteIndividualAppointment(appointmentId: number): Observable<IndividualAppointment[]> {
     return this.httpClient.delete<IndividualAppointment[]>(`${this.baseUrl}/individual/${appointmentId}`);
   }
+
+  updateAppointmentStatus(appointmentId: number, status: string): Observable<IndividualAppointment> {
+    return this.httpClient.put<IndividualAppointment>(`${this.baseUrl}/individual/${appointmentId}`, { status });
+  }
 }

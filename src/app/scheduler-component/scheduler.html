@@ -242,8 +242,7 @@
                   </div>
                 </div>
 
-                <!-- Appointment Slot Selector -->
-                <div class="detail-row" *ngIf="availableAppointmentSlots.length > 0">
+                <div class="detail-row" *ngIf="availableAppointmentSlots.length > 0 && !isGroupFull(appointment.groupId!)">
                   <mat-icon>schedule</mat-icon>
                   <div style="width: 100%;">
                     <button 

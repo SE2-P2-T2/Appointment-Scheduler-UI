@@ -504,6 +504,19 @@ loadAvailableAppointments(instructorId: number): void {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
+
+        if (appointmentId) {
+          console.log('📝 Updating individual appointment status to booked:', appointmentId);
+          this.individualAppointmentService.updateAppointmentStatus(appointmentId, 'booked').subscribe({
+            next: () => {
+              console.log('Individual appointment status updated to booked');
+            },
+            error: (error) => {
+              console.error('Error updating appointment status:', error);
+            }
+          });
+        }
+
         this.loadMyBookings();
         if (this.selectedInstructor) {
           this.loadAvailableAppointments(this.selectedInstructor.userId);

@@ -74,6 +74,7 @@ export class InstructorSchedulerComponent implements OnInit {
   groupMembers: { [key: number]: GroupMember[] } = {};
   groupMemberCounts: { [key: number]: number } = {};
   loadingGroupMembers: { [key: number]: boolean } = {};
+  appointmentBookingCounts: { [appointmentId: number]: number } = {};
 
   constructor(
     private groupsService: GroupsService,
@@ -143,9 +144,10 @@ export class InstructorSchedulerComponent implements OnInit {
 
     this.groupAppointmentSlotService.getGroupAppointmentsByInstructor(this.currentInstructorId).subscribe({
       next: (data) => {
-        this.groupAppointments = data;
+        this.groupAppointments = data.filter(apt => apt.status === 'available');
         this.groupAppointmentsLoading = false;
-        console.log('Loaded group appointments for instructor:', this.groupAppointments);
+        console.log('Loaded available group appointments for instructor:', this.groupAppointments);
+        this.calculateAppointmentBookingCounts();
       },
       error: (error) => {
         this.groupAppointmentsError = 'Failed to load group appointments';
@@ -470,5 +472,51 @@ isArray(value: any): boolean {
       month: 'long',
       day: 'numeric'
     });
+  }
+
+  calculateAppointmentBookingCounts(): void {
+    this.schedulerService.getGroupBookings().subscribe({
+      next: (allGroupBookings) => {
+        console.log('All group bookings fetched:', allGroupBookings);
+        
+        this.appointmentBookingCounts = {};
+        
+        const confirmedBookings = allGroupBookings.filter(
+          b => b.status === 'confirmed' && b.groupAppointmentId && b.groupId
+        );
+        
+        console.log('Confirmed bookings:', confirmedBookings);
+        
+        if (confirmedBookings.length === 0) {
+          console.log('No confirmed bookings found');
+          return;
+        }
+        
+        confirmedBookings.forEach(booking => {
+          const appointmentId = booking.groupAppointmentId!;
+          const groupId = booking.groupId!;
+          
+          this.groupAppointmentService.getGroupMemberCount(groupId).subscribe({
+            next: (memberCount) => {
+              console.log(`Group ${groupId} has ${memberCount} members`);
+              this.appointmentBookingCounts[appointmentId] = 
+                (this.appointmentBookingCounts[appointmentId] || 0) + memberCount;
+              console.log(`Updated count for appointment ${appointmentId}:`, this.appointmentBookingCounts[appointmentId]);
+            },
+            error: (error) => {
+              console.error(`Error getting member count for group ${groupId}:`, error);
+            }
+          });
+        });
+      },
+      error: (error) => {
+        console.error('Error fetching group bookings:', error);
+      }
+    });
+  }
+
+  getAppointmentBookingCount(appointmentId: number | undefined): number {
+    if (!appointmentId) return 0;
+    return this.appointmentBookingCounts[appointmentId] || 0;
   }
 }
