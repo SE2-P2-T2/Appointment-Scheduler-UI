@@ -75,6 +75,10 @@ export class Scheduler implements OnInit {
   myGroupMembers: { [key: number]: GroupMember[] } = {};
   loadingMyGroupMembers: { [key: number]: boolean } = {};
 
+  availableAppointmentSlots: any[] = [];
+  showingAppointmentSelector: { [groupId: number]: boolean } = {};
+  selectedAppointmentForGroup: { [groupId: number]: any } = {};
+
   constructor(
     private userService: UserService,
     private schedulerService: SchedulerService,
@@ -185,7 +189,7 @@ loadAvailableAppointments(instructorId: number): void {
       this.loadingIndividual = false;
       const availableGroupSlots = data.groupAppointmentSlots.filter(
         slot => slot.groupAppointmentId !== undefined &&
-                !bookedGroupAppointmentIds.includes(slot.groupAppointmentId)
+                !bookedGroupAppointmentIds.includes(slot.groupAppointmentId ) && slot.status === 'available'
       );
 
       const instructorGroups = data.allGroups.filter(
@@ -218,27 +222,38 @@ loadAvailableAppointments(instructorId: number): void {
         this.myGroups = results.filter((g): g is Groups => g !== null);
         console.log('My groups:', this.myGroups);
 
-        this.availableGroupAppointments = availableGroupSlots.map(slot => {
-          const userGroup = this.myGroups.find(g => g.instructorId === instructorId);
+        const bookedGroupAppointmentIds: number[] = data.allBookings
+          .filter(b => b.bookingType === 'group' && b.status === 'confirmed' && b.groupAppointmentId)
+          .map(b => b.groupAppointmentId!)
+          .filter((id): id is number => id !== null && id !== undefined);
+      
+        const availableSlots = availableGroupSlots.filter(
+          slot => 
+            slot.groupAppointmentId && 
+            slot.status === 'available' &&
+            !bookedGroupAppointmentIds.includes(slot.groupAppointmentId)
+        );
 
+        this.availableAppointmentSlots = availableSlots;
+        console.log('Available appointment slots (status=available, not booked):', this.availableAppointmentSlots);
+
+        this.availableGroupAppointments = this.myGroups.map(group => {
+          const defaultSlot = availableSlots[0];
+          
           return {
-            ...slot,
-            groupId: userGroup?.groupId,
-            groupName: userGroup?.groupName,
-            maxMembers: userGroup?.maxMembers
+            groupAppointmentId: defaultSlot?.groupAppointmentId,
+            appointmentDate: defaultSlot?.appointmentDate,
+            startTime: defaultSlot?.startTime,
+            endTime: defaultSlot?.endTime,
+            description: defaultSlot?.description,
+            groupId: group.groupId,
+            groupName: group.groupName,
+            maxMembers: group.maxMembers,
+            instructorId: group.instructorId
           };
-        }).filter(item => item.groupId !== undefined);
+        });
 
         this.loadingGroup = false;
-
-        if (this.availableGroupAppointments.length > 0 && this.myGroups.length > 0) {
-          this.myGroups.forEach(group => {
-            if (group.groupId && availableGroupSlots.length > 0 && availableGroupSlots[0].groupAppointmentId) {
-              this.groupToAppointmentMap[group.groupId] = availableGroupSlots[0].groupAppointmentId;
-              console.log(`Mapped groupId ${group.groupId} to groupAppointmentId ${availableGroupSlots[0].groupAppointmentId}`);
-            }
-          });
-        }
 
         this.availableGroupAppointments.forEach(appointment => {
           if (appointment.groupId) {
@@ -384,20 +399,20 @@ loadAvailableAppointments(instructorId: number): void {
       return;
     }
 
+    const selectedSlot = this.selectedAppointmentForGroup[groupId];
+
+    if (!selectedSlot || !selectedSlot.groupAppointmentId) {
+      this.snackBar.open('Please select an appointment slot for this group', 'Close', { duration: 3000 });
+      return;
+    }
+
     if (!confirm('This will book the appointment for ALL members of the group. Continue?')) {
       return;
     }
 
-    const groupAppointmentId = this.groupToAppointmentMap[groupId];
-
-    if (!groupAppointmentId) {
-      this.snackBar.open('No appointment slot available for this group', 'Close', { duration: 3000 });
-      return;
-    }
-
-
 
     const description = groupName || 'Group Appointment';
+    const groupAppointmentId = selectedSlot.groupAppointmentId;
 
     this.schedulerService.bookGroupForAll(this.currentStudentId, groupId, description, groupAppointmentId).subscribe({
       next: (booking) => {
@@ -405,6 +420,17 @@ loadAvailableAppointments(instructorId: number): void {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
+
+        if (groupAppointmentId) {
+          this.groupAppointmentService.updateAppointmentStatus(groupAppointmentId, 'booked').subscribe({
+            next: () => {
+              console.log('Appointment status updated to booked');
+            },
+            error: (error) => {
+              console.error('Error updating appointment status:', error);
+            }
+          });
+        }
 
         this.loadMyBookings();
         if (this.selectedInstructor) {
@@ -420,6 +446,24 @@ loadAvailableAppointments(instructorId: number): void {
         });
       }
     });
+  }
+
+  toggleAppointmentSelector(groupId: number): void {
+    this.showingAppointmentSelector[groupId] = !this.showingAppointmentSelector[groupId];
+  }
+
+  selectAppointmentForGroup(groupId: number, appointment: any): void {
+    this.selectedAppointmentForGroup[groupId] = appointment;
+    this.showingAppointmentSelector[groupId] = false;
+    console.log(`Selected appointment ${appointment.groupAppointmentId} for group ${groupId}`);
+  }
+
+  getSelectedAppointmentText(groupId: number): string {
+    const selected = this.selectedAppointmentForGroup[groupId];
+    if (!selected) {
+      return 'Select Appointment Slot';
+    }
+    return `${this.formatTime(selected.startTime)} - ${this.formatTime(selected.endTime)}`;
   }
 
   toggleGroupMembers(groupId: number): void {
@@ -455,18 +499,24 @@ loadAvailableAppointments(instructorId: number): void {
 
     this.schedulerService.bookIndividualAppointment(this.currentStudentId, appointmentId, description).subscribe({
       next: (booking) => {
+        console.log('Individual appointment booked successfully:', booking);
         this.snackBar.open('Appointment booked successfully!', 'Close', {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
-        this.individualAppointmentService.deleteIndividualAppointment(appointmentId).subscribe({
-          next: () => {
-            console.log('Individual appointment deleted');
-          },
-          error: (error) => {
-            console.error('Error deleting individual appointment:', error);
-          }
-        });
+
+        if (appointmentId) {
+          console.log('📝 Updating individual appointment status to booked:', appointmentId);
+          this.individualAppointmentService.updateAppointmentStatus(appointmentId, 'booked').subscribe({
+            next: () => {
+              console.log('Individual appointment status updated to booked');
+            },
+            error: (error) => {
+              console.error('Error updating appointment status:', error);
+            }
+          });
+        }
+
         this.loadMyBookings();
         if (this.selectedInstructor) {
           this.loadAvailableAppointments(this.selectedInstructor.userId);

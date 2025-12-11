@@ -183,7 +183,16 @@
               <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
               <strong>Description:</strong> {{ appointment.description || 'No description' }}<br>
               <strong>Created:</strong> {{ formatDate(appointment.createdAt) }}<br>
-              <strong>Status:</strong> <span class="status-badge available">OPEN FOR GROUP BOOKING</span>
+              <strong>Status:</strong> 
+              <span class="status-badge" [ngClass]="appointment.status?.toLowerCase()">
+                {{ appointment.status?.toUpperCase() || 'UNKNOWN' }}
+              </span>
+              <br>
+              <strong>Members Joined:</strong> 
+              <span class="booking-count-badge">
+                <mat-icon>person</mat-icon>
+                {{ getAppointmentBookingCount(appointment.groupAppointmentId) }} member(s)
+              </span>
             </p>
           </mat-card-content>
 
