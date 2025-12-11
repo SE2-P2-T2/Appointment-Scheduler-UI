@@ -23,9 +23,10 @@ export class IndividualAppointmentService {
 
   getIndividualAppointmentsByInstructor(instructorId: number): Observable<IndividualAppointment[]> {
     return this.getAllIndividualAppointments().pipe(
-      map((appointments: IndividualAppointment[]) =>
-        appointments.filter(apt => apt.instructorId === instructorId)
-      )
+      map((appointments: any) => {
+        const appointmentArray = Array.isArray(appointments) ? appointments : [];
+        return appointmentArray.filter(apt => apt.instructorId === instructorId);
+      })
     );
   }
 
