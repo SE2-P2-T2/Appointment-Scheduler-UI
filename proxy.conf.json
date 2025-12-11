@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "http://localhost:9000",
+    "target": "http://appointment-edge-service.appointment-scheduler.svc.cluster.local:9000",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
