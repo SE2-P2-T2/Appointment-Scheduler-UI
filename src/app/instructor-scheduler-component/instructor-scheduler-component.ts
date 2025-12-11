@@ -104,7 +104,8 @@ export class InstructorSchedulerComponent implements OnInit {
 
     this.groupsService.getAllGroups().subscribe({
       next: (allGroups) => {
-        this.groupSlots = allGroups.filter(g => g.instructorId === this.currentInstructorId);
+        const groupsArray = Array.isArray(allGroups) ? allGroups : [];
+        this.groupSlots = groupsArray.filter(g => g.instructorId === this.currentInstructorId);
         this.groupSlotsLoading = false;
         console.log('Loaded group slots for instructor:', this.groupSlots);
       },
@@ -122,7 +123,8 @@ export class InstructorSchedulerComponent implements OnInit {
 
     this.individualAppointmentService.getAllIndividualAppointments().subscribe({
       next: (data) => {
-        this.individualAppointments = data.filter(
+        const dataArray = Array.isArray(data) ? data : [];
+        this.individualAppointments = dataArray.filter(
           apt => apt.instructorId === this.currentInstructorId &&
                  apt.status !== 'cancelled' &&
                  apt.status !== 'booked'
@@ -144,7 +146,8 @@ export class InstructorSchedulerComponent implements OnInit {
 
     this.groupAppointmentSlotService.getGroupAppointmentsByInstructor(this.currentInstructorId).subscribe({
       next: (data) => {
-        this.groupAppointments = data.filter(apt => apt.status === 'available');
+        const dataArray = Array.isArray(data) ? data : [];
+        this.groupAppointments = dataArray.filter(apt => apt.status === 'available');
         this.groupAppointmentsLoading = false;
         console.log('Loaded available group appointments for instructor:', this.groupAppointments);
         this.calculateAppointmentBookingCounts();
@@ -194,10 +197,12 @@ export class InstructorSchedulerComponent implements OnInit {
     allAppointments: IndividualAppointment[]
   ): void {
     const enrichedBookings: BookedIndividualAppointment[] = [];
+    const bookingsArray = Array.isArray(bookings) ? bookings : [];
+    const appointmentsArray = Array.isArray(allAppointments) ? allAppointments : [];
 
-    bookings.forEach(booking => {
+    bookingsArray.forEach(booking => {
       if (booking.appointmentId) {
-        const appointment = allAppointments.find(
+        const appointment = appointmentsArray.find(
           a => a.appointmentId === booking.appointmentId
         );
 
@@ -225,9 +230,11 @@ processGroupBookings(
   allGroups: Groups[]
 ): void {
   const enrichedBookings: BookedGroupAppointment[] = [];
+  const bookingsArray = Array.isArray(bookings) ? bookings : [];
+  const groupsArray = Array.isArray(allGroups) ? allGroups : [];
   const groupedByGroupId = new Map<number, SchedulerAppointment[]>();
-  
-  bookings.forEach(booking => {
+
+  bookingsArray.forEach(booking => {
     if (booking.groupId) {
       const groupId = booking.groupId;
       if (!groupedByGroupId.has(groupId)) {
@@ -247,8 +254,8 @@ processGroupBookings(
     });
     
     const firstBooking = sortedBookings[0];
-    
-    const group = allGroups.find(g => g.groupId === groupId);
+
+    const group = groupsArray.find(g => g.groupId === groupId);
     
     if (group && group.instructorId === this.currentInstructorId) {
       this.userService.getUserById(firstBooking.studentId).subscribe({
@@ -478,10 +485,11 @@ isArray(value: any): boolean {
     this.schedulerService.getGroupBookings().subscribe({
       next: (allGroupBookings) => {
         console.log('All group bookings fetched:', allGroupBookings);
-        
+
         this.appointmentBookingCounts = {};
-        
-        const confirmedBookings = allGroupBookings.filter(
+
+        const bookingsArray = Array.isArray(allGroupBookings) ? allGroupBookings : [];
+        const confirmedBookings = bookingsArray.filter(
           b => b.status === 'confirmed' && b.groupAppointmentId && b.groupId
         );
         
