@@ -27,15 +27,10 @@ export class AdminComponent implements OnInit {
   pendingInstructors: User[] = [];
   pendingTAs: User[] = [];
 
-  pendingStudentInstructorMappings: any[] = [];
-  pendingTAInstructorMappings: any[] = [];
 
-  // Separate loading flags
   loadingStudents = false;
   loadingInstructors = false;
   loadingTAs = false;
-  loadingStudentInstructorMappings = false;
-  loadingTAInstructorMappings = false;
 
   constructor(
     private adminService: AdminService,
@@ -50,11 +45,8 @@ export class AdminComponent implements OnInit {
     this.fetchPendingStudents();
     this.fetchPendingInstructors();
     this.fetchPendingTAs();
-    this.fetchPendingStudentInstructorMappings();
-    this.fetchPendingTAInstructorMappings();
   }
 
-  // -------------------- FETCH METHODS --------------------
 
   fetchPendingStudents() {
     this.loadingStudents = true;
@@ -83,26 +75,7 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  fetchPendingStudentInstructorMappings() {
-    this.loadingStudentInstructorMappings = true;
-    this.adminService.getPendingStudentInstructorMappings().subscribe({
-      next: (res: any[]) => this.pendingStudentInstructorMappings = res,
-      error: (err: any) => console.error(err),
-      complete: () => this.loadingStudentInstructorMappings = false
-    });
-  }
-
-  fetchPendingTAInstructorMappings() {
-    this.loadingTAInstructorMappings = true;
-    this.adminService.getPendingTAInstructorMappings().subscribe({
-      next: (res: any[]) => this.pendingTAInstructorMappings = res,
-      error: (err: any) => console.error(err),
-      complete: () => this.loadingTAInstructorMappings = false
-    });
-  }
-
   // -------------------- USER APPROVE/REJECT --------------------
-
   approveUser(userId: number) {
     this.adminService.approveUser(userId).subscribe({
       next: () => {
@@ -125,62 +98,6 @@ export class AdminComponent implements OnInit {
       error: (err: any) => {
         console.error(err);
         this.snackBar.open('Error rejecting user', 'Close', { duration: 2000 });
-      }
-    });
-  }
-
-  // -------------------- STUDENT-INSTRUCTOR MAPPINGS --------------------
-
-  approveStudentInstructorMapping(mappingId: number) {
-    this.adminService.approveStudentInstructorMapping(mappingId).subscribe({
-      next: () => {
-        this.snackBar.open('Mapping approved!', 'Close', { duration: 2000 });
-        this.fetchPendingStudentInstructorMappings();
-      },
-      error: (err: any) => {
-        console.error(err);
-        this.snackBar.open('Error approving mapping', 'Close', { duration: 2000 });
-      }
-    });
-  }
-
-  rejectStudentInstructorMapping(mappingId: number) {
-    this.adminService.rejectStudentInstructorMapping(mappingId).subscribe({
-      next: () => {
-        this.snackBar.open('Mapping rejected!', 'Close', { duration: 2000 });
-        this.fetchPendingStudentInstructorMappings();
-      },
-      error: (err: any) => {
-        console.error(err);
-        this.snackBar.open('Error rejecting mapping', 'Close', { duration: 2000 });
-      }
-    });
-  }
-
-  // -------------------- TA-INSTRUCTOR MAPPINGS --------------------
-
-  approveTAInstructorMapping(mappingId: number) {
-    this.adminService.approveTAInstructorMapping(mappingId).subscribe({
-      next: () => {
-        this.snackBar.open('TA-Instructor mapping approved!', 'Close', { duration: 2000 });
-        this.fetchPendingTAInstructorMappings();
-      },
-      error: (err: any) => {
-        console.error(err);
-        this.snackBar.open('Error approving mapping', 'Close', { duration: 2000 });
-      }
-    });
-  }
-
-  rejectTAInstructorMapping(mappingId: number) {
-    this.adminService.rejectTAInstructorMapping(mappingId).subscribe({
-      next: () => {
-        this.snackBar.open('TA-Instructor mapping rejected!', 'Close', { duration: 2000 });
-        this.fetchPendingTAInstructorMappings();
-      },
-      error: (err: any) => {
-        console.error(err);
-        this.snackBar.open('Error rejecting mapping', 'Close', { duration: 2000 });
       }
     });
   }
