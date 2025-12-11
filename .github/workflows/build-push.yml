@@ -1,0 +1,62 @@
+name: Build and Push UI to ACR
+
+on:
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  ACR_NAME: appointmentscheduler
+  ACR_LOGIN_SERVER: appointmentscheduler.azurecr.io
+  SERVICE_NAME: appointment-scheduler-ui
+  DOCKER_CONTEXT: ./Appointment-Scheduler-UI
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'Appointment-Scheduler-UI/package-lock.json'
+    
+    - name: Install dependencies
+      run: |
+        cd Appointment-Scheduler-UI
+        npm ci
+    
+    - name: Build Angular application
+      run: |
+        cd Appointment-Scheduler-UI
+        npm run build
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Login to ACR
+      run: |
+        az acr login --name ${{ env.ACR_NAME }}
+    
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.SERVICE_NAME }}:${{ github.sha }} -f Appointment-Scheduler-UI/Dockerfile .
+        docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+                   ${{ env.ACR_LOGIN_SERVER }}/${{ env.SERVICE_NAME }}:latest
+        docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+        docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.SERVICE_NAME }}:latest
+    
+    - name: Trigger K8s Deployment
+      run: |
+        curl -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ secrets.K8S_REPO_TOKEN }}" \
+          https://api.github.com/repos/${{ secrets.K8S_REPO_OWNER }}/k8s-manifests/actions/workflows/deploy.yml/dispatches \
+          -d '{"ref":"main","inputs":{"service":"${{ env.SERVICE_NAME }}","image_tag":"${{ github.sha }}"}}'
