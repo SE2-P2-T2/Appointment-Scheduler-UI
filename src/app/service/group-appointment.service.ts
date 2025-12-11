@@ -54,6 +54,10 @@ export class GroupAppointmentService {
     return this.httpClient.get<GroupAppointment[]>(`${this.baseUrl}/by-instructor/${instructorId}`);
   }
 
+  updateAppointmentStatus(appointmentId: number, status: string): Observable<GroupAppointment> {
+    return this.httpClient.put<GroupAppointment>(`${this.baseUrl}/${appointmentId}`, { status });
+  }
+
   deleteGroupAppointment(appointmentId: number): Observable<void> {
     return this.httpClient.delete<void>(`${this.baseUrl}/${appointmentId}`);
   }

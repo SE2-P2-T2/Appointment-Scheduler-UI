@@ -149,15 +149,8 @@
       <div class="subsection">
         <div class="subsection-header">
           <mat-icon>groups</mat-icon>
-          <h3>My Group Appointments</h3>
+          <h3>My Groups</h3>
           <span class="count-badge">{{ availableGroupAppointments.length }}</span>
-        </div>
-
-        <div class="info-banner">
-          <mat-icon>info</mat-icon>
-          <div class="info-text">
-            <p><strong>Note:</strong> Only groups you've joined are shown here. To join new groups, click the "Join Group Slots" button above.</p>
-          </div>
         </div>
 
         <div *ngIf="loadingGroup" class="loading-container">
@@ -168,10 +161,6 @@
         <div *ngIf="!loadingGroup && availableGroupAppointments.length === 0" class="no-data-container">
           <mat-icon>event_busy</mat-icon>
           <p>You haven't joined any groups yet.</p>
-          <button mat-raised-button color="primary" (click)="goToGroupManagement()">
-            <mat-icon>group_add</mat-icon>
-            Join Groups
-          </button>
         </div>
 
         <div *ngIf="!loadingGroup && availableGroupAppointments.length > 0" class="cards-grid">
@@ -195,14 +184,6 @@
             
             <mat-card-content>
               <div class="appointment-details">
-                <div class="detail-row">
-                  <mat-icon>event</mat-icon>
-                  <span><strong>Date:</strong> {{ formatDate(appointment.appointmentDate) || 'N/A' }}</span>
-                </div>
-                <div class="detail-row">
-                  <mat-icon>schedule</mat-icon>
-                  <span><strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}</span>
-                </div>
                 <div class="detail-row" *ngIf="appointment.description">
                   <mat-icon>description</mat-icon>
                   <span>{{ appointment.description }}</span>
@@ -260,17 +241,42 @@
                     <span>No members yet</span>
                   </div>
                 </div>
+
+                <!-- Appointment Slot Selector -->
+                <div class="detail-row" *ngIf="availableAppointmentSlots.length > 0">
+                  <mat-icon>schedule</mat-icon>
+                  <div style="width: 100%;">
+                    <button 
+                      mat-stroked-button 
+                      color="primary"
+                      (click)="toggleAppointmentSelector(appointment.groupId!)"
+                      style="width: 100%; margin-top: 8px;">
+                      <mat-icon>{{ showingAppointmentSelector[appointment.groupId!] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                      {{ getSelectedAppointmentText(appointment.groupId!) }}
+                    </button>
+                    
+                    <div *ngIf="showingAppointmentSelector[appointment.groupId!]" style="margin-top: 8px; border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; max-height: 150px; overflow-y: auto;">
+                      <div *ngFor="let slot of availableAppointmentSlots" 
+                           (click)="selectAppointmentForGroup(appointment.groupId!, slot)"
+                           style="padding: 8px; cursor: pointer; border-bottom: 1px solid #f0f0f0; hover: {background-color: #f5f5f5};"
+                           [style.background-color]="selectedAppointmentForGroup[appointment.groupId!]?.groupAppointmentId === slot.groupAppointmentId ? '#e3f2fd' : 'white'">
+                        <strong>{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</strong>
+                        <div style="font-size: 12px; color: #666;">{{ slot.description }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </mat-card-content>
             
             <mat-card-actions>
               <button 
                 mat-raised-button 
-                [color]="hasMinimumMembers(appointment.groupId!) ? 'accent' : 'primary'"
-                [disabled]="!hasMinimumMembers(appointment.groupId!)"
+                [color]="hasMinimumMembers(appointment.groupId!) && selectedAppointmentForGroup[appointment.groupId!] ? 'accent' : 'primary'"
+                [disabled]="!hasMinimumMembers(appointment.groupId!) || !selectedAppointmentForGroup[appointment.groupId!]"
                 (click)="bookGroupForAll(appointment.groupId!, appointment.groupName || '')">
-                <mat-icon>{{ hasMinimumMembers(appointment.groupId!) ? 'event_available' : 'schedule' }}</mat-icon>
-                {{ hasMinimumMembers(appointment.groupId!) ? 'Book for All Members' : 'Need 2+ Members to Book' }}
+                <mat-icon>{{ hasMinimumMembers(appointment.groupId!) && selectedAppointmentForGroup[appointment.groupId!] ? 'event_available' : 'schedule' }}</mat-icon>
+                {{ !hasMinimumMembers(appointment.groupId!) ? 'Need 2+ Members to Book' : !selectedAppointmentForGroup[appointment.groupId!] ? 'Select Slot to Book' : 'Book for All Members' }}
               </button>
             </mat-card-actions>
           </mat-card>

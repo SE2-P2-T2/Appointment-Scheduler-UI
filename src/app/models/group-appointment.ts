@@ -5,6 +5,7 @@ export interface GroupAppointment {
   startTime?: string;
   endTime?: string;
   description?: string;
+  status?: string;
   createdAt?: string;
   updatedAt?: string;
 }
