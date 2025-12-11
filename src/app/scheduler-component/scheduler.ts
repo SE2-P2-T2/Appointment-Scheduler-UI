@@ -506,7 +506,7 @@ loadAvailableAppointments(instructorId: number): void {
         });
 
         if (appointmentId) {
-          console.log('📝 Updating individual appointment status to booked:', appointmentId);
+          console.log('Updating individual appointment status to booked:', appointmentId);
           this.individualAppointmentService.updateAppointmentStatus(appointmentId, 'booked').subscribe({
             next: () => {
               console.log('Individual appointment status updated to booked');

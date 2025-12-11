@@ -10,7 +10,7 @@ import { GroupMember } from '../models/GroupMember';
   providedIn: 'root'
 })
 export class SchedulerService {
-  private baseUrl = `${environment.schedulerServiceUrl}/api/scheduler`;
+  private baseUrl = `${environment.schedulerServiceUrl}/scheduler`;
 
   constructor(private http: HttpClient) {}
   
