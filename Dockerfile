@@ -1,31 +1,39 @@
 # Multi-stage build for Angular
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 
 # Copy package files
-COPY Appointment-Scheduler-UI/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm ci
 
 # Copy source code
-COPY Appointment-Scheduler-UI/src ./src
-COPY Appointment-Scheduler-UI/public ./public
-COPY Appointment-Scheduler-UI/angular.json ./
-COPY Appointment-Scheduler-UI/tsconfig*.json ./
+COPY src ./src
+COPY public ./public
+COPY angular.json ./
+COPY tsconfig*.json ./
 
 # Build Angular application
 RUN npm run build
 
+# Debug: list dist contents
+RUN ls -la /app/dist/appointment-scheduler-ui/
+
 # Serve with Nginx
 FROM nginx:alpine
-WORKDIR /usr/share/nginx/html
 
-# Copy nginx config
-COPY Appointment-Scheduler-UI/nginx.conf /etc/nginx/nginx.conf
+# Remove default nginx config and all default files
+RUN rm -rf /etc/nginx/conf.d/default.conf /usr/share/nginx/html/*
 
-# Copy built application
-COPY --from=build /app/dist/appointment-scheduler-ui/browser .
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy built application to nginx
+COPY --from=build /app/dist/appointment-scheduler-ui/browser/ /usr/share/nginx/html/
+
+# List what got copied
+RUN ls -la /usr/share/nginx/html/
 
 # Expose port
 EXPOSE 4200
