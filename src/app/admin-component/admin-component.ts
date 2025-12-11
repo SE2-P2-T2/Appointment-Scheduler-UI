@@ -1,59 +1,188 @@
 import { Component, OnInit } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AdminService } from '../service/admin.service';
+import { User } from '../models/User';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
-import { AdminService, User, StudentInstructorRequest } from '../service/admin.service';
-
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatListModule } from '@angular/material/list';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-  selector: 'app-admin-component',
+  selector: 'app-admin',
+  templateUrl: './admin-component.html',
+  styleUrls: ['./admin-component.scss'],
   standalone: true,
   imports: [
     CommonModule,
-    MatToolbarModule,
-    MatListModule,
-    MatExpansionModule,
-    MatCardModule,
+    MatTabsModule,
+    MatTableModule,
     MatButtonModule,
-    MatIconModule,
-    MatTableModule
-  ],
-  templateUrl: './admin-component.html',
-  styleUrls: ['./admin-component.scss'],
+    MatSnackBarModule
+  ]
 })
 export class AdminComponent implements OnInit {
-  pendingUsers$: Observable<User[]> = new Observable<User[]>();
-  pendingLinks$: Observable<StudentInstructorRequest[]> = new Observable<StudentInstructorRequest[]>();
-  allUsers$: Observable<User[]> = new Observable<User[]>();
-  displayedColumns: string[] = ['name', 'email', 'role', 'signup_status', 'actions'];
 
-  constructor(private adminService: AdminService) {}
+  pendingStudents: User[] = [];
+  pendingInstructors: User[] = [];
+  pendingTAs: User[] = [];
+
+  pendingStudentInstructorMappings: any[] = [];
+  pendingTAInstructorMappings: any[] = [];
+
+  // Separate loading flags
+  loadingStudents = false;
+  loadingInstructors = false;
+  loadingTAs = false;
+  loadingStudentInstructorMappings = false;
+  loadingTAInstructorMappings = false;
+
+  constructor(
+    private adminService: AdminService,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
-    this.pendingUsers$ = this.adminService.getPendingUsers();
-    this.pendingLinks$ = this.adminService.getStudentInstructorRequests();
-    this.allUsers$ = this.adminService.getPendingUsers(); // dummy, replace with getAllUsers later
+    this.fetchAllPending();
   }
 
-  approveUser(id: number) {
-    this.adminService.approveUser(id);
+  fetchAllPending() {
+    this.fetchPendingStudents();
+    this.fetchPendingInstructors();
+    this.fetchPendingTAs();
+    this.fetchPendingStudentInstructorMappings();
+    this.fetchPendingTAInstructorMappings();
   }
 
-  rejectUser(id: number) {
-    this.adminService.rejectUser(id);
+  // -------------------- FETCH METHODS --------------------
+
+  fetchPendingStudents() {
+    this.loadingStudents = true;
+    this.adminService.getPendingStudents().subscribe({
+      next: (res: User[]) => this.pendingStudents = res,
+      error: (err: any) => console.error(err),
+      complete: () => this.loadingStudents = false
+    });
   }
 
-  approveLink(id: number) {
-    this.adminService.approveStudentInstructor(id);
+  fetchPendingInstructors() {
+    this.loadingInstructors = true;
+    this.adminService.getPendingInstructors().subscribe({
+      next: (res: User[]) => this.pendingInstructors = res,
+      error: (err: any) => console.error(err),
+      complete: () => this.loadingInstructors = false
+    });
   }
 
-  rejectLink(id: number) {
-    this.adminService.rejectStudentInstructor(id);
+  fetchPendingTAs() {
+    this.loadingTAs = true;
+    this.adminService.getPendingTAs().subscribe({
+      next: (res: User[]) => this.pendingTAs = res,
+      error: (err: any) => console.error(err),
+      complete: () => this.loadingTAs = false
+    });
   }
+
+  fetchPendingStudentInstructorMappings() {
+    this.loadingStudentInstructorMappings = true;
+    this.adminService.getPendingStudentInstructorMappings().subscribe({
+      next: (res: any[]) => this.pendingStudentInstructorMappings = res,
+      error: (err: any) => console.error(err),
+      complete: () => this.loadingStudentInstructorMappings = false
+    });
+  }
+
+  fetchPendingTAInstructorMappings() {
+    this.loadingTAInstructorMappings = true;
+    this.adminService.getPendingTAInstructorMappings().subscribe({
+      next: (res: any[]) => this.pendingTAInstructorMappings = res,
+      error: (err: any) => console.error(err),
+      complete: () => this.loadingTAInstructorMappings = false
+    });
+  }
+
+  // -------------------- USER APPROVE/REJECT --------------------
+
+  approveUser(userId: number) {
+    this.adminService.approveUser(userId).subscribe({
+      next: () => {
+        this.snackBar.open('User approved!', 'Close', { duration: 2000 });
+        this.fetchAllPending();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.snackBar.open('Error approving user', 'Close', { duration: 2000 });
+      }
+    });
+  }
+
+  rejectUser(userId: number) {
+    this.adminService.rejectUser(userId).subscribe({
+      next: () => {
+        this.snackBar.open('User rejected!', 'Close', { duration: 2000 });
+        this.fetchAllPending();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.snackBar.open('Error rejecting user', 'Close', { duration: 2000 });
+      }
+    });
+  }
+
+  // -------------------- STUDENT-INSTRUCTOR MAPPINGS --------------------
+
+  approveStudentInstructorMapping(mappingId: number) {
+    this.adminService.approveStudentInstructorMapping(mappingId).subscribe({
+      next: () => {
+        this.snackBar.open('Mapping approved!', 'Close', { duration: 2000 });
+        this.fetchPendingStudentInstructorMappings();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.snackBar.open('Error approving mapping', 'Close', { duration: 2000 });
+      }
+    });
+  }
+
+  rejectStudentInstructorMapping(mappingId: number) {
+    this.adminService.rejectStudentInstructorMapping(mappingId).subscribe({
+      next: () => {
+        this.snackBar.open('Mapping rejected!', 'Close', { duration: 2000 });
+        this.fetchPendingStudentInstructorMappings();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.snackBar.open('Error rejecting mapping', 'Close', { duration: 2000 });
+      }
+    });
+  }
+
+  // -------------------- TA-INSTRUCTOR MAPPINGS --------------------
+
+  approveTAInstructorMapping(mappingId: number) {
+    this.adminService.approveTAInstructorMapping(mappingId).subscribe({
+      next: () => {
+        this.snackBar.open('TA-Instructor mapping approved!', 'Close', { duration: 2000 });
+        this.fetchPendingTAInstructorMappings();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.snackBar.open('Error approving mapping', 'Close', { duration: 2000 });
+      }
+    });
+  }
+
+  rejectTAInstructorMapping(mappingId: number) {
+    this.adminService.rejectTAInstructorMapping(mappingId).subscribe({
+      next: () => {
+        this.snackBar.open('TA-Instructor mapping rejected!', 'Close', { duration: 2000 });
+        this.fetchPendingTAInstructorMappings();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.snackBar.open('Error rejecting mapping', 'Close', { duration: 2000 });
+      }
+    });
+  }
+
 }
