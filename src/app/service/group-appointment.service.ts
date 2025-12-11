@@ -12,7 +12,7 @@ import { GroupMember } from '../models/GroupMember';
 export class GroupAppointmentService {
 
   private baseUrl = `${environment.groupApiUrl}/groupappointments`;
-  private schedulerBaseUrl = `${environment.schedulerServiceUrl}/api/scheduler`;
+  private schedulerBaseUrl = `${environment.schedulerServiceUrl}/scheduler`;
 
   constructor(private httpClient: HttpClient) {}
 

@@ -183,16 +183,7 @@
               <strong>Time:</strong> {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}<br>
               <strong>Description:</strong> {{ appointment.description || 'No description' }}<br>
               <strong>Created:</strong> {{ formatDate(appointment.createdAt) }}<br>
-              <strong>Status:</strong> 
-              <span class="status-badge" [ngClass]="appointment.status?.toLowerCase()">
-                {{ appointment.status?.toUpperCase() || 'UNKNOWN' }}
-              </span>
-              <br>
-              <strong>Members Joined:</strong> 
-              <span class="booking-count-badge">
-                <mat-icon>person</mat-icon>
-                {{ getAppointmentBookingCount(appointment.groupAppointmentId) }} member(s)
-              </span>
+              <strong>Status:</strong>
             </p>
           </mat-card-content>
 
@@ -234,7 +225,7 @@
           Group Slot Bookings
         </mat-panel-title>
         <mat-panel-description>
-          {{ bookedGroupAppointments.length }} students joined groups
+          {{ bookedGroupAppointments.length }} slot is booked
         </mat-panel-description>
       </mat-expansion-panel-header>
 
@@ -302,13 +293,6 @@
             </div>
 
           </mat-card-content>
-          
-          <mat-card-actions>
-            <button mat-button color="primary">
-              <mat-icon>email</mat-icon>
-              Contact Student
-            </button>
-          </mat-card-actions>
         </mat-card>
       </div>
     </mat-expansion-panel>

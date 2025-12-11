@@ -147,7 +147,10 @@ export class InstructorSchedulerComponent implements OnInit {
     this.groupAppointmentSlotService.getGroupAppointmentsByInstructor(this.currentInstructorId).subscribe({
       next: (data) => {
         const dataArray = Array.isArray(data) ? data : [];
-        this.groupAppointments = dataArray.filter(apt => apt.status === 'available');
+        this.groupAppointments = dataArray.filter(apt =>
+          !apt.status || apt.status === 'available' ||
+          (apt.status !== 'booked' && apt.status !== 'cancelled')
+        );
         this.groupAppointmentsLoading = false;
         console.log('Loaded available group appointments for instructor:', this.groupAppointments);
         this.calculateAppointmentBookingCounts();

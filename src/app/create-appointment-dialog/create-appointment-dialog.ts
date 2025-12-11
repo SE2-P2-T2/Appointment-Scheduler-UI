@@ -107,6 +107,7 @@ export class CreateAppointmentDialogComponent {
         startTime: this.startTime(),
         endTime: this.endTime(),
         description: this.description(),
+        status: 'available',
       };
 
       const result: AppointmentDialogResult = {
